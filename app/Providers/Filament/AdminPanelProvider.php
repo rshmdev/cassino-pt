@@ -6,6 +6,8 @@ use Althinect\FilamentSpatieRolesPermissions\FilamentSpatieRolesPermissionsPlugi
 use App\Filament\Admin\Pages\AdvancedPage;
 use App\Filament\Admin\Pages\DashboardAdmin;
 use App\Filament\Admin\Pages\DigitoPayPaymentPage;
+// use App\Filament\Admin\Pages\SharkPayPaymentPage;
+use App\Filament\Admin\Pages\SuitPayPaymentPage;
 use App\Filament\Admin\Pages\GamesKeyPage;
 use App\Filament\Admin\Pages\GatewayPage;
 use App\Filament\Admin\Pages\LayoutCssCustom;
@@ -135,6 +137,13 @@ class AdminPanelProvider extends PanelProvider
                                     ->url(fn (): string => DigitoPayPaymentPage::getUrl())
                                     ->isActiveWhen(fn () => request()->routeIs('filament.pages.digitopay-payment-page'))
                                     ->visible(fn(): bool => auth()->user()->hasRole('admin')),
+
+                                NavigationItem::make('suitpay-pagamentos')
+                                    ->icon('heroicon-o-currency-dollar')
+                                    ->label(fn (): string => 'SuitPay Pagamentos')
+                                    ->url(fn (): string => SuitPayPaymentPage::getUrl())
+                                    ->isActiveWhen(fn () => request()->routeIs('filament.pages.suit-pay-payment-page'))
+                                    ->visible(fn(): bool => auth()->user()->hasRole('admin')),  
                             ])
                         : NavigationGroup::make()
                     ,

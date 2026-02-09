@@ -150,6 +150,8 @@ class PaymentSetting extends Page implements HasForms
                                 ->numeric()
                                 ->maxLength(191),
                         ])->columnSpanFull()->columns(3),
+                        Toggle::make('suitpay_is_enable')
+                            ->label('SuitPay Ativo'),
                         Toggle::make('disable_spin')
                             ->label('Disable Spin')
                     ])->columns(2)

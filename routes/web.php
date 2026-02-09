@@ -32,9 +32,12 @@ Route::get('clear', function() {
 
 // GAMES PROVIDER
 include_once(__DIR__ . '/groups/provider/venix.php');
+include_once(__DIR__ . '/groups/provider/playFiver.php');
 
 // GATEWAYS
+include_once(__DIR__ . '/groups/gateways/suitpay.php');
 include_once(__DIR__ . '/groups/gateways/sharkpay.php');
+include_once(__DIR__ . '/groups/gateways/digitopay.php');
 
 /// SOCIAL
 include_once(__DIR__ . '/groups/auth/social.php');

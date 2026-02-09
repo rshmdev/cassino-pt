@@ -29,6 +29,12 @@ class Gateway extends Model
         'digitopay_cliente_id',
         'digitopay_cliente_secret',
 
+        // SuitPay
+        'suitpay_uri',
+        'suitpay_cliente_id',
+        'suitpay_cliente_secret',
+
+        // SharkPay
         'shark_public_key',
         'shark_private_key',
     ];

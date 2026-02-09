@@ -1,367 +1,220 @@
 <template>
-    <div class="block">
-        <div v-if="(paymentType == null || paymentType === '') && wallet && setting">
-            <div class="">
-                <ul>
-                    <li v-if="setting.sharkpay_is_enable" @click="setPaymentMethod('pix', 'sharkpay')" class=" bg-white dark:bg-gray-900 cursor-pointer flex justify-between hover:bg-green-700/20 px-4 py-3 mb-3">
-                        <div class="flex items-center gap-4">
-                            <img :src="`/assets/images/pix.png`" alt="" width="100">
-                            <p>SHARKPAY</p>
-                        </div>
-                        <div>
-
-                        </div>
-                        <div class="flex justify-center items-center text-gray-500 gap-4">
-                            <i class="fa-solid fa-chevron-right ml-2"></i>
-                        </div>
-                    </li>
-                    <li v-if="setting.digitopay_is_enable" @click="setPaymentMethod('pix', 'digitopay')" class=" bg-white dark:bg-gray-900 cursor-pointer flex justify-between hover:bg-green-700/20 px-4 py-3 mb-3">
-                        <div class="flex items-center gap-4">
-                            <img :src="`/assets/images/pix.png`" alt="" width="100">
-                            <p>DIGITOPAY</p>
-                        </div>
-                        <div>
-
-                        </div>
-                        <div class="flex justify-center items-center text-gray-500 gap-4">
-                            <i class="fa-solid fa-chevron-right ml-2"></i>
-                        </div>
-                    </li>
-                </ul>
-            </div>
+    <div class="flex flex-col h-full bg-[#1A1C20] text-gray-300 font-sans p-4 rounded-xl">
+        <!-- Loading State -->
+        <div v-if="isLoadingWallet || !serverSetting" class="flex flex-col items-center justify-center h-full min-h-[400px]">
+            <svg aria-hidden="true" class="w-10 h-10 text-gray-700 animate-spin fill-primary" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+            </svg>
         </div>
-        <div v-if="paymentType === 'pix' && setting && setting.digitopay_is_enable">
-            <div v-if="showPixQRCode && wallet" class="flex flex-col ">
-                <div class="w-full p-4 bg-white dark:bg-gray-700 rounded mb-3">
-                    <div class="flex justify-between">
-                        <h2 class="text-lg">Falta pouco! Escaneie o código QR pelo seu app de pagamentos ou Internet Banking</h2>
-                        <div class="text-4xl">
-                            <i class="fa-regular fa-circle-dollar"></i>
-                        </div>
+
+        <!-- Main Content -->
+        <div v-else class="space-y-4">
+            <!-- Payment Success / QR Code View -->
+            <div v-if="showPixQRCode" class="flex flex-col items-center animate-fade-in space-y-4">
+                <div class="text-center space-y-2">
+                    <div class="mx-auto w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa-regular fa-qrcode text-3xl text-green-500"></i>
                     </div>
+                    <h3 class="text-white font-bold text-lg">{{ $t('Payment Generated!') }}</h3>
+                    <p class="text-sm text-gray-400">{{ $t('Scan the QR Code or use copy and paste to finalize.') }}</p>
                 </div>
 
-                <div class="w-full p-4">
-                    <div>
-                        <p class="font-bold">Valor do Pix a pagar: {{ state.currencyFormat(parseFloat(deposit.amount), wallet.currency) }}</p>
-                    </div>
-                    <div class="p-3 flex justify-center items-center">
-                        <QRCodeVue3 :value="qrcodecopypast"/>
-                    </div>
-                    <div>
-                        <p class="font-bold">Código válido por 23 horas.</p>
-                    </div>
-                    <div class="mt-4">
-                        <p class="mb-3">Se preferir, você pode pagá-lo copiando e colando o código abaixo:</p>
-                        <input id="pixcopiaecola" type="text" class="input" v-model="qrcodecopypast">
-                    </div>
+                <div class="bg-white p-4 rounded-xl shadow-lg border-4 border-white/10">
+                    <QRCodeVue3 :value="qrcodecopypast" :width="200" :height="200"/>
+                </div>
 
-                    <div class="mt-5 w-full flex items-center justify-center">
-                        <button @click.prevent="copyQRCode" type="button" class="ui-button-blue w-full">
-                            <span class="uppercase font-semibold text-sm">{{ $t('Copy code') }}</span>
+                <div class="w-full space-y-3">
+                    <div class="relative">
+                        <input type="text" readonly :value="qrcodecopypast" class="w-full bg-[#0c0d10] border border-white/5 rounded-lg pl-3 pr-10 py-3 text-xs text-gray-400 focus:outline-none focus:border-primary/50 text-ellipsis">
+                        <button @click="copyQRCode" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:text-white transition-colors">
+                            <i class="fa-regular fa-copy"></i>
                         </button>
                     </div>
+                    
+                    <button @click="copyQRCode" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>{{ $t('Copy code') }}</span>
+                    </button>
+                    
+                     <button @click="resetForm" class="w-full bg-transparent border border-white/10 hover:bg-white/5 text-gray-400 font-bold py-3 px-4 rounded-lg transition-all">
+                        {{ $t('New Deposit') }}
+                    </button>
+                </div>
+                
+                <div class="text-center pt-2">
+                    <div class="text-xs text-gray-500 flex items-center justify-center gap-2">
+                         <div v-if="isLoading" class="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full"></div>
+                        <span>{{ $t('Waiting for payment...') }}</span>
+                    </div>
                 </div>
             </div>
-            <div v-if="!showPixQRCode">
-                <div v-if="setting != null && wallet != null && isLoading === false" class="flex flex-col w-full">
-                    <form action="" @submit.prevent="submitQRCode">
-                        <div class="flex items-center justify-between">
-                            <p class="text-gray-500">{{ $t('Deposit Currency') }}</p>
-                            <button type="button" class="flex justify-center items-center mr-3 pt-1">
-                                <div>{{ wallet.currency }}</div>
-                                <div class="mr-2 ml-2">
-                                    <img :src="`/assets/images/coin/BRL.png`" alt="" width="32">
-                                </div>
-                                <div class="ml-2 text-sm">
-                                    <i class="fa-solid fa-chevron-down"></i>
-                                </div>
-                            </button>
-                        </div>
 
-                        <div class="mt-5">
-                            <p class="mb-2 text-gray-500">{{ $t('Payment methods') }}</p>
-                            <div class="w-full flex items-center justify-between bg-white dark:bg-gray-900 rounded p-2">
-                                <div class="flex w-full items-center">
-                                    <img :src="`/assets/images/pix.png`" alt="" width="100">
-                                    <span class="ml-3">PIX</span>
-                                </div>
-                                <div class="w-8 ">
-                                    <i class="fa-solid fa-chevron-down"></i>
-                                </div>
-                            </div>
+            <!-- Deposit Form -->
+            <form v-else @submit.prevent="submitDeposit" class="space-y-4">
+                
+                 <!-- Currency Selection -->
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold uppercase tracking-widest text-gray-500">{{ $t('Deposit Currency') }}</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <img :src="`/assets/images/coin/${wallet?.currency || 'BRL'}.png`" class="w-5 h-5" alt="Flag">
                         </div>
-
-                        <div class="mt-3">
-                            <p class="mb-2 text-gray-500">{{ state.currencyFormat(parseFloat(setting.min_deposit), wallet.currency) }} - {{ state.currencyFormat(parseFloat(setting.max_deposit), wallet.currency) }}</p>
-                            <div class="w-full flex items-center justify-between bg-white dark:bg-gray-900 rounded py-1">
-                                <div class="flex w-full">
-                                    <input type="text"
-                                           v-model="deposit.amount"
-                                           class="appearance-none border border-gray-300 rounded-md bg-transparent border-none w-full"
-                                           :min="setting.min_deposit"
-                                           :max="setting.max_deposit"
-                                           :placeholder="$t('Enter the value here')"
-                                           required
-                                    >
-                                </div>
-<!--                                <div v-if="deposit.amount > 0" class="text-green-500 w-80 font-bold text-right">-->
-<!--                                    Extra + {{ state.currencyFormat(parseFloat((deposit.amount/setting.initial_bonus * 100)) + parseFloat(deposit.amount), wallet.currency) }}-->
-<!--                                </div>-->
-                            </div>
-                        </div>
-
-                        <div class="mt-3 text-gray-500">
-                            <p>{{ $t('Get an extra bonus') }} <strong class="text-white font-bold">{{ setting.initial_bonus }}%</strong> {{ $t('on a minimum deposit of') }} <strong class="text-white font-bold">{{ state.currencyFormat(parseFloat(setting.min_deposit), wallet.currency) }}</strong></p>
-                        </div>
-
-                        <div>
-                            <label class="inline-flex items-center mb-5 cursor-pointer">
-                                <input type="checkbox" v-model="deposit.accept_bonus" value="" class="sr-only peer">
-                                <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
-                                <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Aceitar Bônus</span>
-                            </label>
-                        </div>
-
-                        <div class="mt-5 item-selected ">
-                            <div @click.prevent="setAmount(parseFloat(setting.min_deposit))" class="item" :class="{'active' : selectedAmount === parseFloat(setting.min_deposit)}">
-                                <button type="button">{{ state.currencyFormat(parseFloat(setting.min_deposit), wallet.currency) }}</button>
-                                <div v-if="selectedAmount === parseFloat(setting.min_deposit)" class="ratio">+{{ setting.initial_bonus }}%</div>
-                                <img v-if="selectedAmount === parseFloat(setting.min_deposit)" class="img-check" :src="`/assets/images/check.webp`" alt="">
-                            </div>
-                            <div @click.prevent="setAmount(50.00)" class="item" :class="{'active' : selectedAmount === 50.00}">
-                                <button type="button">{{ wallet.symbol }} 50,00</button>
-                                <div v-if="selectedAmount === 50.00" class="ratio">+{{ setting.initial_bonus }}%</div>
-                                <img v-if="selectedAmount === 50.00" class="img-check" :src="`/assets/images/check.webp`" alt="">
-                            </div>
-                            <div @click.prevent="setAmount(200.00)" class="item" :class="{'active' : selectedAmount === 200.00}">
-                                <button type="button">{{ wallet.symbol }} 200,00</button>
-                                <div v-if="selectedAmount === 200.00" class="ratio">+{{ setting.initial_bonus }}%</div>
-                                <img v-if="selectedAmount === 200.00" class="img-check" :src="`/assets/images/check.webp`" alt="">
-                            </div>
-                        </div>
-
-                        <div class="mt-5">
-                            <p class="text-gray-500">CPF/CNPJ</p>
-                            <input type="text"
-                                   v-model="deposit.cpf"
-                                   v-maska
-                                   data-maska="[
-                                    '###.###.###-##',
-                                    '##.###.###/####-##'
-                                   ]"
-                                   class="mt-2 border-none text-gray-600 placeholder:text-gray-300 dark:text-gray-200 dark:placeholder:text-gray-500  w-full bg-white dark:bg-gray-900 font-sans transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-75 px-2 text-sm leading-5 rounded py-3"
-                                   placeholder="Digite o CPF"
-                                   required>
-                        </div>
-
-                        <div class="mt-5 w-full flex items-center justify-center">
-                            <button type="submit" class="ui-button-blue w-full">
-                                <span class="uppercase font-semibold text-sm">{{ $t('Deposit') }}</span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                <div v-if="isLoading" role="status" class="absolute -translate-x-1/2 -translate-y-1/2 top-2/4 left-1/2">
-                    <svg aria-hidden="true" class="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-green-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/><path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/></svg>
-                    <span class="sr-only">{{ $t('Loading') }}...</span>
-                </div>
-            </div>
-        </div>
-        <div v-if="paymentType === 'pix' && setting && setting.sharkpay_is_enable">
-            <div v-if="showPixQRCode && wallet" class="flex flex-col ">
-                <div class="w-full p-4 bg-white dark:bg-gray-700 rounded mb-3">
-                    <div class="flex justify-between">
-                        <h2 class="text-lg">Falta pouco! Escaneie o código QR pelo seu app de pagamentos ou Internet Banking</h2>
-                        <div class="text-4xl">
-                            <i class="fa-regular fa-circle-dollar"></i>
+                        <select disabled class="block w-full pl-10 pr-4 py-3 bg-[#0c0d10] border border-white/10 rounded-lg text-white appearance-none focus:outline-none focus:border-primary/50 text-sm font-medium cursor-not-allowed opacity-80">
+                            <option>{{ wallet?.currency || 'BRL' }}</option>
+                        </select>
+                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-xs text-gray-500"></i>
                         </div>
                     </div>
                 </div>
 
-                <div class="w-full p-4">
+                <!-- Payment Method -->
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold uppercase tracking-widest text-gray-500">{{ $t('Payment methods') }}</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <img src="/assets/images/pix.png" class="w-5 h-auto" alt="Pix">
+                        </div>
+                        <select v-model="paymentType" class="block w-full pl-10 pr-4 py-3 bg-[#0c0d10] border border-white/10 rounded-lg text-white appearance-none focus:outline-none focus:border-primary/50 text-sm font-medium">
+                            <option value="pix">PIX</option>
+                        </select>
+                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-xs text-gray-500"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Amount Input -->
+                <div class="space-y-1">
+                     <div class="flex justify-between items-end">
+                        <label class="text-[10px] font-bold uppercase tracking-widest text-gray-500">{{ $t('Deposit Amount') }}</label>
+                        <span class="text-[10px] text-gray-600">{{ stateCurrencyFormat(serverSetting?.min_deposit) }} - {{ stateCurrencyFormat(serverSetting?.max_deposit) }}</span>
+                    </div>
+                    <div class="relative group">
+                         <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                            <span class="text-gray-400 font-bold text-sm">{{ wallet?.symbol }}</span>
+                        </div>
+                        <input 
+                            type="number" 
+                            v-model="deposit.amount" 
+                            class="block w-full pl-10 pr-4 py-3 bg-[#0c0d10] border border-white/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-bold text-lg"
+                            :placeholder="$t('0.00')"
+                            step="0.01"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <!-- Bonus Toggle -->
+                <div class="p-3 bg-gradient-to-r from-[#0c0d10] to-[#131418] border border-white/10 rounded-lg flex items-center justify-between">
                     <div>
-                        <p class="font-bold">Valor do Pix a pagar: {{ state.currencyFormat(parseFloat(deposit.amount), wallet.currency) }}</p>
+                        <p class="text-sm font-bold text-white mb-0.5">
+                            {{ $t('Get extra bonus') }} <span class="text-primary">{{ serverSetting?.initial_bonus }}%</span>
+                        </p>
+                        <p class="text-[10px] text-gray-500 leading-tight">
+                            {{ $t('On deposits above') }} <span class="text-gray-300">{{ stateCurrencyFormat(serverSetting?.min_deposit) }}</span>
+                        </p>
                     </div>
-                    <div class="p-3 flex justify-center items-center">
-                        <QRCodeVue3 :value="qrcodecopypast"/>
-                    </div>
-                    <div>
-                        <p class="font-bold">Código válido por 23 horas.</p>
-                    </div>
-                    <div class="mt-4">
-                        <p class="mb-3">Se preferir, você pode pagá-lo copiando e colando o código abaixo:</p>
-                        <input id="pixcopiaecola" type="text" class="input" v-model="qrcodecopypast">
-                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" v-model="deposit.accept_bonus" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                </div>
 
-                    <div class="mt-5 w-full flex items-center justify-center">
-                        <button @click.prevent="copyQRCode" type="button" class="ui-button-blue w-full">
-                            <span class="uppercase font-semibold text-sm">{{ $t('Copy code') }}</span>
-                        </button>
+                 <!-- Preset Amounts -->
+                <div class="grid grid-cols-3 gap-2">
+                    <button 
+                        v-for="amount in [20, 50, 200]" 
+                        :key="amount"
+                        @click.prevent="setAmount(amount)"
+                        type="button"
+                        class="relative py-2 px-3 rounded-lg border border-white/10 bg-[#0c0d10] hover:bg-[#1A1C20] hover:border-primary/50 transition-all group"
+                        :class="{'border-primary bg-primary/10 text-primary': parseFloat(deposit.amount) === amount}"
+                    >
+                        <span class="font-bold text-sm">{{ wallet?.symbol }} {{ amount }}</span>
+                         <div v-if="parseFloat(deposit.amount) === amount" class="absolute -top-2 -right-2 bg-primary text-white text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-lg">
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- CPF Input -->
+                 <div class="space-y-1">
+                    <label class="text-[10px] font-bold uppercase tracking-widest text-gray-500">{{ $t('CPF') }}</label>
+                    <div class="relative">
+                         <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                            <i class="fa-regular fa-id-card text-gray-500"></i>
+                        </div>
+                        <input 
+                            type="text" 
+                            v-model="deposit.cpf" 
+                            v-maska
+                            data-maska="['###.###.###-##', '##.###.###/####-##']"
+                            class="block w-full pl-10 pr-4 py-3 bg-[#0c0d10] border border-white/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-sm font-medium"
+                            :placeholder="$t('Enter CPF')"
+                            required
+                        >
                     </div>
                 </div>
-            </div>
-            <div v-if="!showPixQRCode">
-                <div v-if="wallet != null && isLoading === false" class="flex flex-col w-full">
-                    <form action="" @submit.prevent="submitQRCode">
-                        <div class="flex items-center justify-between">
-                            <p class="text-gray-500">{{ $t('Deposit Currency') }}</p>
-                            <button type="button" class="flex justify-center items-center mr-3 pt-1">
-                                <div>{{ wallet.currency }}</div>
-                                <div class="mr-2 ml-2">
-                                    <img :src="`/assets/images/coin/BRL.png`" alt="" width="32">
-                                </div>
-                                <div class="ml-2 text-sm">
-                                    <i class="fa-solid fa-chevron-down"></i>
-                                </div>
-                            </button>
-                        </div>
 
-                        <div class="mt-5">
-                            <p class="mb-2 text-gray-500">{{ $t('Payment methods') }}</p>
-                            <div class="w-full flex items-center justify-between bg-white dark:bg-gray-900 rounded p-2">
-                                <div class="flex w-full items-center">
-                                    <img :src="`/assets/images/pix.png`" alt="" width="100">
-                                    <span class="ml-3">PIX</span>
-                                </div>
-                                <div class="w-8 ">
-                                    <i class="fa-solid fa-chevron-down"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-3">
-                            <p class="mb-2 text-gray-500">{{ state.currencyFormat(parseFloat(setting.min_deposit), wallet.currency) }} - {{ state.currencyFormat(parseFloat(setting.max_deposit), wallet.currency) }}</p>
-                            <div class="w-full flex items-center justify-between bg-white dark:bg-gray-900 rounded py-1">
-                                <div class="flex w-full">
-                                    <input type="text"
-                                           v-model="deposit.amount"
-                                           class="appearance-none border border-gray-300 rounded-md bg-transparent border-none w-full"
-                                           :min="setting.min_deposit"
-                                           :max="setting.max_deposit"
-                                           :placeholder="$t('Enter the value here')"
-                                           required
-                                    >
-                                </div>
-                                <!--                                <div v-if="deposit.amount > 0" class="text-green-500 w-80 font-bold text-right">-->
-                                <!--                                    Extra + {{ state.currencyFormat(parseFloat((deposit.amount/setting.initial_bonus * 100)) + parseFloat(deposit.amount), wallet.currency) }}-->
-                                <!--                                </div>-->
-                            </div>
-                        </div>
-
-                        <div class="mt-3 text-gray-500">
-                            <p>{{ $t('Get an extra bonus') }} <strong class="text-white font-bold">{{ setting.initial_bonus }}%</strong> {{ $t('on a minimum deposit of') }} <strong class="text-white font-bold">{{ state.currencyFormat(parseFloat(setting.min_deposit), wallet.currency) }}</strong></p>
-                        </div>
-
-                        <div>
-                            <label class="inline-flex items-center mb-5 cursor-pointer">
-                                <input type="checkbox" v-model="deposit.accept_bonus" value="" class="sr-only peer">
-                                <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 dark:peer-focus:ring-green-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-600"></div>
-                                <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Aceitar Bônus</span>
-                            </label>
-                        </div>
-
-                        <div class="mt-5 item-selected ">
-                            <div @click.prevent="setAmount(parseFloat(setting.min_deposit))" class="item" :class="{'active' : selectedAmount === parseFloat(setting.min_deposit)}">
-                                <button type="button">{{ state.currencyFormat(parseFloat(setting.min_deposit), wallet.currency) }}</button>
-                                <div v-if="selectedAmount === parseFloat(setting.min_deposit)" class="ratio">+{{ setting.initial_bonus }}%</div>
-                                <img v-if="selectedAmount === parseFloat(setting.min_deposit)" class="img-check" :src="`/assets/images/check.webp`" alt="">
-                            </div>
-                            <div @click.prevent="setAmount(50.00)" class="item" :class="{'active' : selectedAmount === 50.00}">
-                                <button type="button">{{ wallet.symbol }} 50,00</button>
-                                <div v-if="selectedAmount === 50.00" class="ratio">+{{ setting.initial_bonus }}%</div>
-                                <img v-if="selectedAmount === 50.00" class="img-check" :src="`/assets/images/check.webp`" alt="">
-                            </div>
-                            <div @click.prevent="setAmount(200.00)" class="item" :class="{'active' : selectedAmount === 200.00}">
-                                <button type="button">{{ wallet.symbol }} 200,00</button>
-                                <div v-if="selectedAmount === 200.00" class="ratio">+{{ setting.initial_bonus }}%</div>
-                                <img v-if="selectedAmount === 200.00" class="img-check" :src="`/assets/images/check.webp`" alt="">
-                            </div>
-                        </div>
-
-                        <div class="mt-5">
-                            <p class="text-gray-500">CPF/CNPJ</p>
-                            <input type="text"
-                                   v-model="deposit.cpf"
-                                   v-maska
-                                   data-maska="[
-                                    '###.###.###-##',
-                                    '##.###.###/####-##'
-                                   ]"
-                                   class="mt-2 border-none text-gray-600 placeholder:text-gray-300 dark:text-gray-200 dark:placeholder:text-gray-500  w-full bg-white dark:bg-gray-900 font-sans transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-75 px-2 text-sm leading-5 rounded py-3"
-                                   placeholder="Digite o CPF"
-                                   required>
-                        </div>
-
-                        <div class="mt-5 w-full flex items-center justify-center">
-                            <button type="submit" class="ui-button-blue w-full">
-                                <span class="uppercase font-semibold text-sm">{{ $t('Deposit') }}</span>
-                            </button>
-                        </div>
-                    </form>
+                <!-- Submit Button -->
+                <button 
+                    type="submit" 
+                    :disabled="isLoading || !serverSetting"
+                    class="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white font-black uppercase text-sm tracking-wider py-4 rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                >
+                    <span v-if="!isLoading">{{ $t('Deposit') }}</span>
+                    <div v-else class="flex items-center justify-center">
+                         <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        {{ $t('Processing...') }}
+                    </div>
+                </button>
+                
+                 <!-- Security Footer -->
+                <div class="flex items-center justify-center gap-2 mt-4 opacity-50">
+                    <i class="fa-solid fa-shield-check text-xs text-gray-400"></i>
+                    <span class="text-[10px] font-medium text-gray-400 uppercase tracking-wider">{{ $t('24/7 Secure Support') }}</span>
                 </div>
-                <div v-if="isLoading" role="status" class="absolute -translate-x-1/2 -translate-y-1/2 top-2/4 left-1/2">
-                    <svg aria-hidden="true" class="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-green-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/><path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/></svg>
-                    <span class="sr-only">{{ $t('Loading') }}...</span>
-                </div>
-            </div>
+
+            </form>
         </div>
     </div>
 </template>
 
 <script>
-    import {useToast} from "vue-toastification";
+    import { useToast } from "vue-toastification";
     import HttpApi from "@/Services/HttpApi.js";
     import QRCodeVue3 from "qrcode-vue3";
-    import {useAuthStore} from "@/Stores/Auth.js";
-    import { StripeCheckout } from '@vue-stripe/vue-stripe';
-    import {useSettingStore} from "@/Stores/SettingStore.js";
+    import { useAuthStore } from "@/Stores/Auth.js";
+    import { useSettingStore } from "@/Stores/SettingStore.js";
+    import { Modal } from 'flowbite';
 
     export default {
         props: ['showMobile', 'title', 'isFull'],
-        components: { QRCodeVue3, StripeCheckout },
+        components: { QRCodeVue3 },
         data() {
-
             return {
                 isLoading: false,
-                minutes: 15,
-                seconds: 0,
-                timer: null,
-                setting: null,
+                isLoadingWallet: false,
+                serverSetting: null,
                 wallet: null,
                 deposit: {
                     amount: '',
                     cpf: '',
+                    paymentType: 'pix',
                     gateway: '',
                     accept_bonus: true
                 },
-                selectedAmount: 0,
                 showPixQRCode: false,
                 qrcodecopypast: '',
                 idTransaction: '',
                 intervalId: null,
                 paymentType: 'pix',
-
-                /// stripe
-                elementsOptions: {
-                    appearance: {}, // appearance options
-                },
-                confirmParams: {
-                    return_url: null, // success url
-                },
-                successURL: null,
-                cancelURL: null,
-                amount: null,
-                currency: null,
-                publishableKey: null,
-                sessionId: null,
-                paymentGateway: 'sharkpay',
             }
-        },
-        setup(props) {
-
-
-            return {};
         },
         computed: {
             isAuthenticated() {
@@ -369,153 +222,161 @@
                 return authStore.isAuth;
             },
         },
-        mounted() {
-            this.modalDeposit = new Modal(document.getElementById('modalElDeposit'), {
-                placement: 'center',
-                backdrop: 'dynamic',
-                backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
-                closable: true,
-                onHide: () => {
-                    this.paymentType = null;
-                },
-                onShow: () => {
-
-                },
-                onToggle: () => {
-
-                },
-            });
-        },
-        beforeUnmount() {
-            clearInterval(this.timer);
-            this.paymentType = null;
-        },
         methods: {
-            setPaymentMethod: function(type, gateway) {
-                this.paymentType = type;
-                this.paymentGateway = gateway;
+             stateCurrencyFormat(value) {
+                if(value === undefined || value === null) return '0,00';
+                 // Fallback if wallet/currency not loaded yet
+                const currency = this.wallet?.currency || 'BRL';
+                const locale = currency === 'BRL' ? 'pt-BR' : 'en-US';
+                return new Intl.NumberFormat(locale, { style: 'currency', currency: currency }).format(value);
             },
-            openModalDeposit: function() {
-                this.modalDeposit.toggle();
+            setAmount(amount) {
+                this.deposit.amount = amount;
             },
-            submitQRCode: function(event) {
-                const _this = this;
+            resetForm() {
+                this.showPixQRCode = false;
+                this.qrcodecopypast = '';
+                this.idTransaction = '';
+                clearInterval(this.intervalId);
+                this.deposit.amount = '';
+            },
+            determineGateway() {
+                // Determine which gateway to use based on settings
+                if (this.serverSetting.sharkpay_is_enable) return 'sharkpay';
+                if (this.serverSetting.suitpay_is_enable) return 'suitpay';
+                if (this.serverSetting.digitopay_is_enable) return 'digitopay';
+                return 'suitpay'; // Default
+            },
+            submitDeposit() {
                 const _toast = useToast();
-                if(_this.deposit.amount === '' || _this.deposit.amount === undefined) {
-                    _toast.error(_this.$t('You need to enter a value'));
+                
+                if (!this.deposit.amount) {
+                    _toast.error(this.$t('Please enter an amount'));
+                    return;
+                }
+                
+                const amount = parseFloat(this.deposit.amount);
+                const min = parseFloat(this.serverSetting.min_deposit);
+                const max = parseFloat(this.serverSetting.max_deposit);
+
+                if (amount < min) {
+                    _toast.error(this.$t('Minimum value is') + ' ' + this.stateCurrencyFormat(min));
+                    return;
+                }
+                
+                if (amount > max) {
+                    _toast.error(this.$t('Maximum value is') + ' ' + this.stateCurrencyFormat(max));
                     return;
                 }
 
-                if(_this.deposit.cpf === '' || _this.deposit.cpf === undefined) {
-                    _toast.error(_this.$t('Do you need to enter your CPF or CNPJ'));
+                if (!this.deposit.cpf) {
+                    _toast.error(this.$t('Enter your CPF'));
                     return;
                 }
 
-                if(parseFloat(_this.deposit.amount) < parseFloat(_this.setting.min_deposit)) {
-                    _toast.error('O valor mínimo de depósito é de '+ _this.setting.min_deposit);
-                    return;
-                }
+                this.isLoading = true;
+                this.deposit.gateway = this.determineGateway();
+                this.deposit.paymentType = this.paymentType; // Always pix for now
 
-                if(parseFloat(_this.deposit.amount) > parseFloat(_this.setting.max_deposit)) {
-                    _toast.error('O valor máximo de depósito é de '+ _this.setting.min_deposit);
-                    return;
-                }
+                HttpApi.post('wallet/deposit/payment', this.deposit).then(response => {
+                    this.showPixQRCode = true;
+                    this.isLoading = false;
+                    this.idTransaction = response.data.idTransaction;
+                    this.qrcodecopypast = response.data.qrcode;
 
-                _this.deposit.paymentType = _this.paymentType;
-                _this.deposit.gateway = _this.paymentGateway;
-
-                _this.isLoading = true;
-                HttpApi.post('wallet/deposit/payment', _this.deposit).then(response => {
-                    _this.showPixQRCode = true;
-                    _this.isLoading = false;
-
-                    _this.idTransaction = response.data.idTransaction;
-                    _this.qrcodecopypast = response.data.qrcode;
-
-                    _this.intervalId = setInterval(function () {
-                        _this.checkTransactions(_this.idTransaction);
+                    this.intervalId = setInterval(() => {
+                        this.checkTransactions(this.idTransaction);
                     }, 5000);
 
                 }).catch(error => {
-                    Object.entries(JSON.parse(error.request.responseText)).forEach(([key, value]) => {
-                        _toast.error(`${value}`);
-                    });
-                    _this.showPixQRCode = false;
-                    _this.isLoading = false;
+                    this.isLoading = false;
+                    if (error.request && error.request.responseText) {
+                        const err = JSON.parse(error.request.responseText);
+                        Object.values(err).forEach(msg => _toast.error(msg));
+                    } else {
+                        _toast.error(this.$t('Error processing deposit'));
+                    }
                 });
             },
-            checkTransactions: function(idTransaction) {
-                const _this = this;
-                const _toast = useToast();
-
-                HttpApi.post(_this.paymentGateway+'/consult-status-transaction', { idTransaction: idTransaction }).then(response => {
-                    _toast.success('Pedido concluído com sucesso');
-                    clearInterval(_this.intervalId);
+            checkTransactions(idTransaction) {
+                const gateway = this.deposit.gateway || this.determineGateway();
+                HttpApi.post(`${gateway}/consult-status-transaction`, { idTransaction: idTransaction })
+                .then(response => {
+                     // Assuming 200/success means paid
+                    if(response.data.status === 'PAID' || response.data.status === 'paid') {
+                        const _toast = useToast();
+                        _toast.success(this.$t('Deposit confirmed successfully!'));
+                        clearInterval(this.intervalId);
+                        this.resetForm();
+                        this.getWallet(); // Refresh wallet
+                        // Close modal logic if needed
+                        this.$emit('close-modal');
+                    }
                 }).catch(error => {
-                    Object.entries(JSON.parse(error.request.responseText)).forEach(([key, value]) => {
-                        // _toast.error(`${value}`);
-                    });
+                    console.error('Check Status Error:', error);
                 });
             },
-            copyQRCode: function(event) {
+            copyQRCode() {
                 const _toast = useToast();
-                var inputElement = document.getElementById("pixcopiaecola");
-                inputElement.select();
-                inputElement.setSelectionRange(0, 99999);  // Para dispositivos móveis
-
-                // Copia o conteúdo para a área de transferência
-                document.execCommand("copy");
-                _toast.success('Pix Copiado com sucesso');
+                navigator.clipboard.writeText(this.qrcodecopypast).then(() => {
+                     _toast.success(this.$t('Pix Code copied!'));
+                });
             },
-            setAmount: function(amount) {
-                this.deposit.amount = amount;
-                this.selectedAmount = amount;
+            async fetchData() {
+                this.isLoadingWallet = true;
+                try {
+                     const [walletRes] = await Promise.all([
+                        HttpApi.get('profile/wallet'),
+                    ]);
+                    
+                    this.wallet = walletRes.data.wallet;
+                    
+                    // Fallback to store if direct call fails or logic dictates
+                    const settingStore = useSettingStore();
+                    this.serverSetting = settingStore.setting; // Use store setting for now as logic was mixed
+                    
+                    this.isLoadingWallet = false;
+                } catch (e) {
+                    console.error(e);
+                    this.isLoadingWallet = false;
+                }
             },
-            getWallet: function() {
+               getWallet: function() { // Added back as it was called in multiple places
                 const _this = this;
-                const _toast = useToast();
                 _this.isLoadingWallet = true;
 
                 HttpApi.get('profile/wallet')
                     .then(response => {
                         _this.wallet = response.data.wallet;
-                        _this.currency = response.data.wallet.currency;
-                        _this.isLoadingWallet = false;
+                         _this.isLoadingWallet = false;
                     })
                     .catch(error => {
-                        const _this = this;
-                        Object.entries(JSON.parse(error.request.responseText)).forEach(([key, value]) => {
-                            _toast.error(`${value}`);
-                        });
-                        _this.isLoadingWallet = false;
+                         _this.isLoadingWallet = false;
                     });
-            },
-            getSetting: function() {
-                const _this = this;
-                const settingStore = useSettingStore();
-                const settingData = settingStore.setting;
-
-                if(settingData) {
-                    _this.setting = settingData;
-                    _this.amount  = settingData.max_deposit;
-                }
             },
         },
         created() {
+            // Initial data fetch
             if(this.isAuthenticated) {
+                const settingStore = useSettingStore();
+                this.serverSetting = settingStore.setting;
+                
                 this.getWallet();
-                this.getSetting();
             }
         },
-        watch: {
-            amount(oldValue, newValue) {
-            },
-            currency(oldValue, newValue) {
-            }
-        },
+        beforeUnmount() {
+            if(this.intervalId) clearInterval(this.intervalId);
+        }
     };
 </script>
 
 <style scoped>
-
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>

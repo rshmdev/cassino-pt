@@ -31,7 +31,7 @@ export const useAuthStore = defineStore("auth", () => {
      * @param userValue
      */
     function setUser(userValue) {
-        if(userValue != null) {
+        if (userValue != null) {
             localStorage.setItem('user', JSON.stringify(userValue));
             user.value = userValue;
         }
@@ -60,10 +60,10 @@ export const useAuthStore = defineStore("auth", () => {
 
             return data;
         } catch (error) {
-            if(error.response.status === 401) {
+            if (error.response.status === 401) {
                 logout();
                 router.push('/');
-            }else{
+            } else {
                 console.log(error.response);
             }
         }

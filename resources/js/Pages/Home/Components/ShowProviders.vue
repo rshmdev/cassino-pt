@@ -2,17 +2,17 @@
     <div :key="index" class="game-list flex flex-col mt-5 relative">
         <div class="w-full flex justify-between mb-2">
             <h2 class="text-xl font-bold">{{ $t(provider.name) }}</h2>
-            <div class="flex">
+            <div class="flex gap-2">
                 <RouterLink
                     :to="{ name: 'casinosAll', params: { provider: provider.id, category: 'all' } }"
-                    class="item-game px-3 py-2 mr-2 rounded">
+                    class="glass-box px-4 py-1.5 text-xs font-bold uppercase tracking-wider hover:bg-primary hover:border-primary transition-all duration-300">
                     {{ $t('See all') }}
                 </RouterLink>
-                <button @click.prevent="ckCarousel.prev()" class="item-game px-3 py-2 rounded mr-2">
-                    <i class="fa-solid fa-angle-left"></i>
+                <button @click.prevent="ckCarousel.prev()" class="glass-box size-8 flex items-center justify-center hover:bg-white/10 transition-colors">
+                    <i class="fa-solid fa-angle-left text-xs"></i>
                 </button>
-                <button @click.prevent="ckCarousel.next()" class="item-game px-3 py-2 rounded">
-                    <i class="fa-solid fa-angle-right"></i>
+                <button @click.prevent="ckCarousel.next()" class="glass-box size-8 flex items-center justify-center hover:bg-white/10 transition-colors">
+                    <i class="fa-solid fa-angle-right text-xs"></i>
                 </button>
             </div>
         </div>

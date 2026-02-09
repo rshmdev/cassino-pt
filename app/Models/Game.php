@@ -45,7 +45,10 @@ class Game extends Model
         'distribution',
         'views',
         'is_featured',
-        'show_home'
+        'show_home',
+        'playfiver_secret',
+        'playfiver_code',
+        'playfiver_token',
     ];
 
     protected $appends = ['hasFavorite', 'totalFavorites', 'hasLike', 'totalLikes', 'dateHumanReadable', 'createdAt' ];

@@ -53,6 +53,25 @@ class GatewayPage extends Page
     {
         return $form
             ->schema([
+                Section::make('Suitpay')
+                    ->description('Ajustes de credenciais para a Suitpay')
+                    ->schema([
+                        TextInput::make('suitpay_uri')
+                            ->label('Client URI')
+                            ->placeholder('Digite a url da api')
+                            ->maxLength(191)
+                            ->columnSpanFull(),
+                        TextInput::make('suitpay_cliente_id')
+                            ->label('Client ID')
+                            ->placeholder('Digite o client ID')
+                            ->maxLength(191)
+                            ->columnSpanFull(),
+                        TextInput::make('suitpay_cliente_secret')
+                            ->label('Client Secret')
+                            ->placeholder('Digite o client secret')
+                            ->maxLength(191)
+                            ->columnSpanFull(),
+                    ]),
                 Section::make('Sharkpay')
                     ->description('Ajustes de credenciais para a Sharkpay: https://www.sharkpay.com.br')
                     ->schema([

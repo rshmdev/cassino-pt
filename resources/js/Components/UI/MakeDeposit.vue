@@ -3,8 +3,8 @@
         {{ title }}
     </button>
 
-    <div id="modalElDeposit" tabindex="-1" aria-hidden="true" class="fixed  top-0 left-0 right-0 z-50 hidden w-full overflow-x-hidden overflow-y-auto md:inset-0 h-screen md:h-[calc(100%-1rem)] max-h-full">
-        <div class="relative w-full max-w-2xl max-h-full dark:bg-[#17181b] ">
+    <div id="modalElDeposit" tabindex="-1" aria-hidden="true" class="fixed  top-0 left-0 right-0 z-50 hidden w-full overflow-x-hidden overflow-y-auto md:inset-0 min-h-full">
+        <div class="relative w-full max-w-2xl min-h-full flex items-center justify-center dark:bg-[#17181b] p-4">
             <div class="flex flex-col md:justify-between px-6 pb-8 my-auto">
                 <div class="flex justify-between modal-header mb-6 mt-6">
                     <div>

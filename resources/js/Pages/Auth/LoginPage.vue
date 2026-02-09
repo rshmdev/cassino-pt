@@ -6,68 +6,70 @@
             </div>
         </LoadingComponent>
 
-        <div v-if="!isLoading" class="my-auto mt-36">
-            <div class="px-4 py-5">
-                <div class="min-h-[calc(100vh-565px)] text-center flex flex-col items-center justify-center">
-                    <div class="w-full rounded-lg shadow-lg border-none md:mt-0 sm:max-w-md xl:p-0 bg-base">
-                        <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-                            <h1 class="mb-8 text-3xl text-center">{{ $t('Login') }}</h1>
+        <div v-if="!isLoading" class="min-h-[calc(100vh-64px)] flex items-center justify-center p-4">
+            <div class="w-full max-w-lg bg-[#000000] min-h-[70dvh] rounded-3xl shadow-2xl overflow-hidden border border-white/10">
+                <!-- Top Banner -->
+                <div class="w-full aspect-[21/9] relative overflow-hidden bg-gradient-to-br from-primary/20 to-black">
+                     <img src="/assets/images/quests.png" class="absolute right-0 top-0 h-full opacity-30 object-contain pointer-events-none" alt="">
+                     <div class="absolute inset-0 p-6 flex flex-col justify-center">
+                         <h3 class="text-white font-black text-2xl uppercase italic tracking-tighter leading-tight">
+                            Até 25% de<br><span class="text-primary">CASHBACK</span>
+                         </h3>
+                         <p class="text-white/60 text-[10px] mt-1 uppercase font-bold tracking-widest">Diário e Semanal!</p>
+                     </div>
+                </div>
 
-                            <div class="mt-4 px-4">
-                                <form @submit.prevent="loginSubmit" method="post" action="" class="">
+                <!-- Tabs -->
+                <div class="flex p-4 gap-2">
+                    <button class="flex-1 py-3 rounded-xl font-bold text-sm bg-primary text-white shadow-lg shadow-primary/20 transition-all">
+                        Entrar
+                    </button>
+                    <button @click.prevent="$router.push({ name: 'register' })" class="flex-1 py-3 rounded-xl font-bold text-sm text-gray-500 hover:text-white transition-all">
+                        Criar uma conta grátis
+                    </button>
+                </div>
 
-                                    <div class="relative mb-3">
-                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                                            <i class="fa-regular fa-envelope text-success-emphasis"></i>
-                                        </div>
-                                        <input required type="text" v-model="loginForm.email" name="email" class="input-group" :placeholder="$t('Enter email or phone')">
-                                    </div>
+                <div class="p-6 pt-0">
+                    <p class="text-gray-400 text-xs text-center mb-6 px-4">
+                        Acesse sua conta para continuar aproveitando as melhores ofertas.
+                    </p>
 
-                                    <div class="relative mb-6">
-                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                                            <i class="fa-regular fa-lock text-success-emphasis"></i>
-                                        </div>
-                                        <input required :type="typeInputPassword"
-                                               v-model="loginForm.password"
-                                               name="password"
-                                               class="input-group pr-[40px]"
-                                               :placeholder="$t('Type the password')">
-                                        <button type="button" @click.prevent="togglePassword" class="absolute inset-y-0 right-0 flex items-center pr-3.5 ">
-                                            <i v-if="typeInputPassword === 'password'" class="fa-regular fa-eye"></i>
-                                            <i v-if="typeInputPassword === 'text'" class="fa-sharp fa-regular fa-eye-slash"></i>
-                                        </button>
-                                    </div>
-                                    <a @click.prevent="$router.push('/forgot-password')" href="" class="text-white text-sm">{{ $t('Forgot password') }}</a>
-
-                                    <div class="mt-3 w-full">
-                                        <button type="submit" class="ui-button-blue rounded w-full mb-3">
-                                            {{ $t('Log in') }}
-                                        </button>
-                                    </div>
-                                    <p class="text-sm text-gray-300 mb-6">
-                                        {{ $t('Not have an account yet') }}?
-                                        <RouterLink :to="{ name: 'register' }" active-class="top-register-active" class="">
-                                            <strong>{{ $t('Create an account') }}</strong>
-                                        </RouterLink>
-                                    </p>
-                                </form>
-
-                                <div class="login-wrap mt-5">
-                                    <div class="line-text">
-                                        <div class="l"></div>
-                                        <div class="t">{{ $t('Register with your social networks') }}</div>
-                                        <div class="l"></div>
-                                    </div>
-
-                                    <div class="social-group mt-3">
-                                        <a :href="redirectSocialTo()" class="text-social-button hover:text-white focus:ring-4 focus:outline-none font-medium text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:hover:text-white ">
-                                            <i class="fa-brands fa-google"></i>
-                                        </a>
-                                    </div>
-                                </div>
+                    <form @submit.prevent="loginSubmit" class="space-y-4">
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-500 group-focus-within:text-primary transition-colors">
+                                <i class="fa-regular fa-envelope"></i>
                             </div>
+                            <input required type="text" v-model="loginForm.email" 
+                                   class="w-full bg-[#09090b] border border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-sm text-white focus:ring-1 focus:ring-primary focus:border-primary placeholder-gray-600 transition-all font-medium" 
+                                   placeholder="E-mail:">
                         </div>
-                    </div>
+
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-500 group-focus-within:text-primary transition-colors">
+                                <i class="fa-regular fa-lock"></i>
+                            </div>
+                            <input required :type="typeInputPassword" v-model="loginForm.password"
+                                   class="w-full bg-[#09090b] border border-white/5 rounded-xl py-3.5 pl-11 pr-12 text-sm text-white focus:ring-1 focus:ring-primary focus:border-primary placeholder-gray-600 transition-all font-medium"
+                                   placeholder="Senha:">
+                            <button type="button" @click.prevent="togglePassword" class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 hover:text-white transition-colors">
+                                <i v-if="typeInputPassword === 'password'" class="fa-regular fa-eye"></i>
+                                <i v-if="typeInputPassword === 'text'" class="fa-sharp fa-regular fa-eye-slash"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button @click.prevent="$router.push('/forgot-password')" type="button" class="text-xs text-gray-500 hover:text-white transition-colors">Esqueceu a senha?</button>
+                        </div>
+
+                        <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-black py-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform active:scale-[0.98] uppercase text-sm tracking-widest mt-4">
+                            Entrar
+                        </button>
+
+                        <div class="text-center mt-8 pb-4">
+                            <p class="text-gray-500 text-xs mb-2">Ainda não tem uma conta?</p>
+                            <a href="" @click.prevent="$router.push({ name: 'register' })" class="text-primary font-bold text-sm border-b border-primary/20 hover:border-primary transition-all pb-0.5">Criar uma conta grátis</a>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -111,17 +113,13 @@ export default {
         },
     },
     mounted() {
-        const router = useRouter();
         if(this.isAuthenticated) {
-            router.push({ name: 'home' });
+            this.router.push({ name: 'home' });
         }
     },
     methods: {
         redirectSocialTo: function() {
             return '/auth/redirect/google'
-        },
-        loginToggle: function() {
-            this.modalAuth.toggle();
         },
         loginSubmit: async function(event) {
             const _this = this;
@@ -166,12 +164,8 @@ export default {
             }
         },
     },
-    watch: {
-
-    },
 };
 </script>
 
 <style scoped>
-
 </style>

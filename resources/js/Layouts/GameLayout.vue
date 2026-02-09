@@ -3,9 +3,11 @@
 
     <SideBarComponent v-once />
 
-    <div class="ml-0 md:ml-64 mt-0 md:mt-16">
+    <div class="ml-0 md:ml-64 mt-[60px] md:mt-[60px]">
         <slot></slot>
     </div>
+
+    <BottomNavComponent />
 </template>
 
 <script>

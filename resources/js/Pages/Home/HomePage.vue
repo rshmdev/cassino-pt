@@ -15,13 +15,13 @@
                         <Carousel v-bind="settings" :breakpoints="breakpoints" ref="carouselBanner">
                             <Slide v-for="(banner, index) in banners" :key="index">
                                 <div class="carousel__item rounded w-full">
-                                    <a :href="banner.link" class="w-full h-full bg-blue-800 rounded">
+                                    <a :href="banner.link" class="w-full h-full rounded">
                                         <img :src="`/storage/`+banner.image" alt="" class="h-full w-full rounded">
                                     </a>
                                 </div>
                             </Slide>
 
-                            <template #addons>
+                            <!-- <template #addons>
                                 <navigation>
                                     <template #next>
                                         <i class="fa-solid fa-chevron-right text-white"></i>
@@ -31,7 +31,7 @@
                                     </template>
                                 </navigation>
                                 <Pagination />
-                            </template>
+                            </template> -->
                         </Carousel>
                     </div>
                 </div>
@@ -39,41 +39,40 @@
 
             <div class="md:w-4/6 2xl:w-4/6 mx-auto p-4">
                 <!-- Searchbar action -->
-                <div class="mb-5 cursor-pointer w-full">
+                <div class="mb-8 cursor-pointer w-full group">
                     <div class="flex">
-                        <div class="relative w-full">
+                        <div class="relative w-full glass-box overflow-hidden border-white/10 group-hover:border-primary/50 transition-colors duration-300">
                             <input @click.prevent="toggleSearch" type="search"
                                    readonly
-                                   class="block dark:focus:border-green-500 p-2.5 w-full z-20 text-sm text-gray-900 rounded-e-lg input-color-primary border-none focus:outline-none dark:border-s-gray-800  dark:border-gray-800 dark:placeholder-gray-400 dark:text-white "
-                                   placeholder="Nome do jogo | Provedor" required>
+                                   class="block bg-transparent p-4 w-full z-20 text-sm text-white border-none focus:outline-none placeholder-gray-500 cursor-pointer"
+                                   placeholder="Procurar seu jogo favorito...">
 
-                            <button type="submit" class="absolute top-0 end-0 h-full p-2.5 text-sm font-medium text-white rounded-e-lg
-                                 dark:bg-[#1C1E22] ">
-                                <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                            <button type="button" class="absolute top-0 end-0 h-full px-6 text-primary flex items-center justify-center">
+                                <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
                                 </svg>
-                                <span class="sr-only">Search</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- categories -->
-                <div v-if="categories" class="category-list">
-                    <div class="flex mb-5 gap-4" style="max-height: 200px; overflow-x: auto; overflow-y: hidden;">
-                        <div class="flex flex-row justify-between items-center w-full" style="min-width: 100%; white-space: nowrap;">
-                            <RouterLink :to="{ name: 'casinosAll', params: { provider: 'all', category: category.slug }}" v-for="(category, index) in categories"
-                                        class="flex flex-col justify-center items-center min-w-[80px] text-center">
-                                <div class="nui-mask nui-mask-hexed dark:bg-muted-800 flex size-16 scale-95 items-center justify-center dark:bg-[#1E293B] p-4 shadow-lg">
-                                    <img :src="`/storage/`+category.image" alt="" width="35" class="">
-                                </div>
-                                <p class="mt-3">{{ $t(category.name) }}</p>
-                            </RouterLink>
-                        </div>
+                <!-- <div v-if="categories" class="category-list mb-10">
+                    <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+                        <RouterLink :to="{ name: 'casinosAll', params: { provider: 'all', category: category.slug }}" 
+                                    v-for="(category, index) in categories"
+                                    :key="index"
+                                    class="flex flex-col items-center min-w-[100px] group">
+                            <div class="relative size-16 flex items-center justify-center rounded-2xl glass-box border-white/5 group-hover:border-primary/50 transition-all duration-300 group-hover:-translate-y-1">
+                                <div class="absolute inset-0 bg-primary/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <img :src="`/storage/`+category.image" alt="" width="32" class="relative z-10 transition-transform group-hover:scale-110">
+                            </div>
+                            <p class="mt-3 text-xs font-semibold text-gray-400 group-hover:text-white transition-colors">{{ $t(category.name) }}</p>
+                        </RouterLink>
                     </div>
-                </div>
+                </div> -->
 
-                <div v-if="featured_games?.length">
+                <!-- <div v-if="featured_games?.length">
                     <div class="w-full flex justify-between mb-4">
                         <h2 class="text-xl font-bold">{{ $t('Featured') }}</h2>
                     </div>
@@ -89,7 +88,7 @@
                             :game="game"
                         />
                     </div>
-                </div>
+                </div> -->
 
                 <div class="mt-10">
                     <Carousel v-bind="settingsRecommended" :breakpoints="breakpointsRecommended" ref="carouselSubBanner">
@@ -278,7 +277,7 @@ export default {
             return await HttpApi.get('games/all')
                 .then(async response =>  {
                     if(response.data !== undefined) {
-                        _this.providers = response.data.providers;
+                        _this.providers = response.data.providers.sort((a, b) => a.id - b.id);
                         _this.isLoading = false;
                     }
                 })

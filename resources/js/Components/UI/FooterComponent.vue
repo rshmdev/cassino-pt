@@ -1,40 +1,30 @@
 <template>
-    <div class="footer pb-32 md:pb-5 mt-5 footer-color p-4 md:p-8">
+    <div class="footer pb-32 md:pb-5 mt-5 glass-box rounded-none border-x-0 border-b-0 p-4 md:p-8">
         <div class="md:w-4/6 2xl:w-4/6 m-auto">
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
                 <div class="col-span-2 md:col-span-1 flex flex-col">
-                    <div class="flex justify-between mb-3">
+                    <div class="flex justify-between mb-6">
                         <div class="mr-5">
-                            <a v-if="setting" href="/" class="flex ml-2 md:mr-24">
-                                <img :src="`/storage/`+setting.software_logo_black" alt="" class="h-10 mr-3 block dark:hidden " />
-                                <img :src="`/storage/`+setting.software_logo_white" alt=""  class="h-10 mr-3 hidden dark:block" />
+                            <a v-if="setting" href="/" class="flex">
+                                <img :src="`/storage/`+setting.software_logo_white" alt=""  class="h-10 block" />
                             </a>
                         </div>
                         <div>
-                            <img :src="`/assets/images/+18.png`" width="42" alt="">
+                            <img :src="`/assets/images/+18.png`" width="42" alt="" class="grayscale opacity-50">
                         </div>
                     </div>
                     <div v-if="setting">
-                        <div class="">
+                        <div class="text-sm text-gray-500 leading-relaxed">
                             {{ setting.software_description }}
                         </div>
 
-                        <div class="flex  mt-5">
-                            <div class="flex pl-2">
-                                <a href="" class="text-3xl text-gray-400">
-                                    <i class="fa-brands fa-instagram"></i>
-                                </a>
-                            </div>
-                            <div class="flex pl-2">
-                                <a href="" class="text-3xl text-gray-400">
-
-                                </a>
-                            </div>
-                            <div class="flex pl-2">
-                                <a href="" class="text-3xl text-gray-400">
-                                    <i class="fa-brands fa-whatsapp"></i>
-                                </a>
-                            </div>
+                        <div class="flex gap-4 mt-8">
+                            <a href="" class="text-2xl text-gray-600 hover:text-primary transition-colors">
+                                <i class="fa-brands fa-instagram"></i>
+                            </a>
+                            <a href="" class="text-2xl text-gray-600 hover:text-primary transition-colors">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </a>
                         </div>
                     </div>
                 </div>

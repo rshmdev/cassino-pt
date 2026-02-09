@@ -1,19 +1,19 @@
 <template>
     <RouterLink :to="getRouterLink()">
-        <div class="flex text-gray-700 w-full h-auto mr-4 cursor-pointer relative" @mouseover="showGameInfo = true" @mouseleave="showGameInfo = false">
-            <div class="mr-4 relative">
-                <RouterLink v-if="game.distribution === 'kagaming'" :to="{ name: 'casinoPlayPage', params: { id: game.id, slug: game.game_code }}">
-                    <img :src="game.cover" alt="" class="rounded-lg lg:w-auto" :style="{ opacity: showGameInfo ? '0.5' : '1' }">
+        <div class="flex text-gray-700 w-full h-auto cursor-pointer relative overflow-hidden rounded-xl border border-white/5 transition-all duration-300 hover:border-primary/50" @mouseover="showGameInfo = true" @mouseleave="showGameInfo = false">
+            <div class="relative w-full aspect-[3/4]">
+                <RouterLink :to="getRouterLink()" class="block w-full h-full">
+                    <img v-if="game.distribution === 'kagaming'" :src="game.cover" alt="" class="w-full h-full object-cover transition-transform duration-500" :class="{ 'scale-110 blur-sm': showGameInfo }">
+                    <img v-else :src="/storage/+game.cover" alt="" class="w-full h-full object-cover transition-transform duration-500" :class="{ 'scale-110 blur-sm': showGameInfo }">
                 </RouterLink>
-                <RouterLink v-else :to="{ name: 'casinoPlayPage', params: { id: game.id, slug: game.game_code }}">
-                    <img :src="/storage/+game.cover" alt="" class="rounded-lg lg:w-auto" :style="{ opacity: showGameInfo ? '0.5' : '1' }">
-                </RouterLink>
-                <div v-if="showGameInfo" class="absolute inset-0 flex justify-center items-center bg-opacity-10 px-3 py-2">
-                    <div class="text-center text-white max-w-[90%]">
-                        <span class="block truncate text-[12px]">{{ game.game_name }}</span>
-                        <small class="block truncate text-[10px]">{{ game?.provider?.name }}</small>
-                        <button type="button" class="mt-2 px-1 py-1 text-white rounded mx-auto" style="background-color: var(--ci-primary-color);">
-                            <i class="fas fa-play-circle mr-1"></i> Play
+                
+                <div v-if="showGameInfo" class="absolute inset-0 flex flex-col justify-center items-center bg-black/40 backdrop-blur-sm p-4 transition-opacity duration-300">
+                    <div class="text-center text-white w-full">
+                        <span class="block font-bold text-sm mb-1 drop-shadow-md">{{ game.game_name }}</span>
+                        <small class="block text-xs text-gray-300 mb-3">{{ game?.provider?.name }}</small>
+                        <button type="button" class="flex items-center justify-center gap-2 bg-primary hover:bg-primary/80 transition-colors w-full py-2 rounded-lg font-bold text-xs uppercase tracking-wider shadow-lg shadow-primary/20">
+                            <i class="fas fa-play-circle text-lg"></i>
+                            {{ $t('Play') }}
                         </button>
                     </div>
                 </div>

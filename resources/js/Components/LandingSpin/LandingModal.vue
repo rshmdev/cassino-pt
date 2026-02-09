@@ -254,11 +254,10 @@
     }
     #modalSPin .modal-dialog {
         margin: 0px auto;
-        height: 100vh;
+        min-height: 100vh;
     }
     #modalSPin .modal-content {
         background-color: #1a132c;
-        overflow: hidden;
         flex-wrap: nowrap;
         align-items: center;
     }

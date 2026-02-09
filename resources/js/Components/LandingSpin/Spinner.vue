@@ -11,6 +11,7 @@
     import ComponentLastWinners from '@/Components/LandingSpin/LastWinners.vue';
     import * as PIXI from 'pixi.js';
     import { Howl, Howler } from 'howler';
+    import { markRaw } from "vue";
     import TweenMax from "gsap/TweenMax";
     import HttpApi from "@/Services/HttpApi.js";
     import { useSpinStoreData } from '@/Stores/SpinStoreData';
@@ -35,11 +36,11 @@
                 spinVelocityStart: 0.5,
                 spinVelocity: 0,
                 spinning: false,
-                wheel: new PIXI.Container(),
+                wheel: markRaw(new PIXI.Container()),
                 pixiIsLoading: true,
                 pixiLoadingProgress: 0,
-                pixiLoader: PIXI.loader,
-                centerContainer: new PIXI.Container(),
+                pixiLoader: null,
+                centerContainer: markRaw(new PIXI.Container()),
                 stopSpinningInterval: null,
                 spinPoint: null,
                 lightTurn: false,
@@ -48,7 +49,7 @@
                 circle: null,
                 circleSprite: null,
                 circleSpriteLight: null,
-                textContainer: new PIXI.Container(),
+                textContainer: markRaw(new PIXI.Container()),
                 selectedPrize: null,
                 sounds: new Howl({
                     src: ['/assets/sounds/spin/b8fb8ba1.mp3'],
@@ -77,7 +78,7 @@
                         clearInterval(vm.stopSpinningInterval);
                     }
                 }, 100);
-                this.app.ticker.add(this.spinUpdate);
+                this.app.ticker.add(this.spinUpdate, this);
 
 
                 await HttpApi.post('spin/result?sessionId=1', {
@@ -95,9 +96,12 @@
                 });
             },
             spinUpdate(delta) {
+                const step = typeof delta === 'number' ? delta : (delta?.deltaTime ?? 1);
                 if (this.spinVelocity > 0) {
-                    this.wheel.rotation += this.spinVelocity * delta;
-                    if (this.wheel.rotation >= 6.28) {
+                    this.wheel.rotation += this.spinVelocity * step;
+                    if (!Number.isFinite(this.wheel.rotation)) {
+                        this.wheel.rotation = 0;
+                    } else if (this.wheel.rotation >= 6.28) {
                         this.wheel.rotation = 0;
                     }
                 } else {
@@ -130,7 +134,7 @@
                 return (rotation % twoPI + twoPI) % twoPI;
             },
             finalPosition() {
-                this.app.ticker.remove(this.spinUpdate);
+                this.app.ticker.remove(this.spinUpdate, this);
 
                 const currentRotation = this.normalizeRotation(this.wheel.rotation);
                 const targetRotation = this.calculateTargetRotation(this.selectedPrize);
@@ -183,26 +187,31 @@
                 prizeIcon.anchor.set(1);
                 prizeIcon.x = 61;
                 prizeIcon.y = 12;
-                const text = new PIXI.Text(Number(this.wheelPrizes[sectorNum].value).toFixed(2).replace('.', ','), {
-                    fill: '#FFF',
-                    fontSize: 16
+                const text = new PIXI.Text({
+                    text: Number(this.wheelPrizes[sectorNum].value).toFixed(2).replace('.', ','),
+                    style: {
+                        fill: '#FFF',
+                        fontSize: 16
+                    }
                 });
+                const label = markRaw(new PIXI.Container());
 
                 const rotation = this.premioPositions[sectorNum];
                 const textAnchorPercentage = (this.radius - 40 / 2) / this.radius;
 
                 text.anchor.set(0.5, 0.5);
-                text.rotation = rotation + Math.PI;
+                label.rotation = rotation + Math.PI;
 
-                text.position.x = 200 + (this.radius * 0.41 * Math.cos(rotation));
+                label.position.x = 200 + (this.radius * 0.41 * Math.cos(rotation));
 
-                text.position.y = 200 + (this.radius * 0.41 * Math.sin(rotation));
+                label.position.y = 200 + (this.radius * 0.41 * Math.sin(rotation));
 
-                text.scale.set(text.scale.x * -1, text.scale.y * -1);
+                label.scale.set(label.scale.x * -1, label.scale.y * -1);
 
-                text.addChild(prizeIcon);
+                label.addChild(text);
+                label.addChild(prizeIcon);
 
-                this.textContainer.addChild(text);
+                this.textContainer.addChild(label);
             },
             HandleCloseWinList() {
                 this.$emit('hide-win-list');
@@ -223,35 +232,54 @@
                     this.BuildWheel();
                 });
             },
-            BuildWheel() {
+            async BuildWheel() {
+                const assetsToLoad = [
+                    '/assets/images/spin/spin-point.png',
+                    '/assets/images/spin/spin-btn.png',
+                    '/assets/images/spin/spin-background.png',
+                    '/assets/images/spin/spin-light.png',
+                    '/assets/images/spin/spin-hand.png',
+                    '/assets/images/spin/spin-head.png',
+                    '/assets/images/spin/spin-icon-brl.png'
+                ];
+                for (let sector = 0; sector <= this.numberOfSectors; sector++) {
+                    if (this.wheelPrizes[sector]) {
+                        const currency = this.wheelPrizes[sector].currency?.toLowerCase();
+                        if (currency) {
+                            assetsToLoad.push(`/assets/images/spin/spin-icon-${currency}.png`);
+                        }
+                    }
+                }
+                this.pixiIsLoading = true;
+                if (!this.pixiLoader || !this.pixiLoader.add) {
+                    this.pixiLoader = (PIXI.Loader && PIXI.Loader.shared) ? PIXI.Loader.shared : new PIXI.Loader();
+                }
                 this.radius = this.pixiWidth / 2;
-                this.app = new PIXI.Application({
+                this.app = markRaw(new PIXI.Application());
+                await this.app.init({
                     width: this.pixiWidth,
                     height: this.pixiHeight,
                     antialias: true,
                     transparent: true,
                     resolution: 1
                 });
-                this.pixiLoader.add('spinPoint', '/assets/images/spin/spin-point.png');
-                this.pixiLoader.add('spinBtn', '/assets/images/spin/spin-btn.png');
-                this.pixiLoader.add('spinBackground', '/assets/images/spin/spin-background.png');
-                this.pixiLoader.add('spinLight', '/assets/images/spin/spin-light.png');
-                this.pixiLoader.add('spinHand', '/assets/images/spin/spin-hand.png');
-                this.pixiLoader.add('spinHead', '/assets/images/spin/spin-head.png');
-                this.pixiLoader.add('spinIcon_brl', '/assets/images/spin/spin-icon-brl.png');
 
                 const vm = this;
+                await PIXI.Assets.load(assetsToLoad);
+                this.pixiLoadingProgress = 100;
 
-                this.pixiLoader.load((loader, resources) => {
-                    vm.spinPoint = new PIXI.Sprite.from(resources.spinPoint.texture);
-                    vm.buttonSprite = new PIXI.Sprite.from(resources.spinBtn.texture);
-                    vm.circleSprite = new PIXI.Sprite.from(resources.spinBackground.texture);
-                    vm.circleSpriteLight = new PIXI.Sprite.from(resources.spinLight.texture);
+                const tex = (url) => PIXI.Texture.from(url);
+
+                {
+                    vm.spinPoint = markRaw(PIXI.Sprite.from(tex('/assets/images/spin/spin-point.png')));
+                    vm.buttonSprite = markRaw(PIXI.Sprite.from(tex('/assets/images/spin/spin-btn.png')));
+                    vm.circleSprite = markRaw(PIXI.Sprite.from(tex('/assets/images/spin/spin-background.png')));
+                    vm.circleSpriteLight = markRaw(PIXI.Sprite.from(tex('/assets/images/spin/spin-light.png')));
 
                     vm.positionsReverse = vm.premioPositions.slice();
                     vm.positionsReverse.reverse();
 
-                    vm.$refs.pixiContainer.appendChild(vm.app.view);
+                    vm.$refs.pixiContainer.appendChild(vm.app.canvas);
 
                     vm.circle = new PIXI.Graphics();
 
@@ -263,14 +291,16 @@
                     vm.centerContainer.addChild(vm.wheel);
                     vm.centerContainer.width = vm.centerContainer.height = 400;
                     vm.centerContainer.position.set(wPositionY, wPositionX);
-                    vm.centerContainer.fill =
                     vm.centerContainer.x = vm.app.screen.width / 2;
                     vm.centerContainer.y = vm.app.screen.height / 2;
                     window.wheel = vm.wheel;
 
                     for (let sector = 0; sector <= vm.numberOfSectors; sector++) {
                         if (this.wheelPrizes[sector]) {
-                            vm.createSectorText(sector, new PIXI.Sprite.from(resources['spinIcon_'.concat(this.wheelPrizes[sector].currency.toLowerCase())].texture));
+                            const currency = this.wheelPrizes[sector].currency?.toLowerCase();
+                            if (currency) {
+                                vm.createSectorText(sector, markRaw(PIXI.Sprite.from(tex(`/assets/images/spin/spin-icon-${currency}.png`))));
+                            }
                         }
                     }
 
@@ -278,28 +308,35 @@
                         fontFamily: "Inter,-apple-system,Framedcn,Helvetica Neue,Condensed,DisplayRegular,Helvetica,Arial,PingFang SC,Hiragino Sans GB,WenQuanYi Micro Hei,Microsoft Yahei,sans-serif",
                         fill: '#cfbbf3',
                         align: 'center',
-                        stroke: '#34495e',
-                        strokeThickness: 1,
-                        lineJoin: 'lineJoin',
+                        stroke: {
+                            color: '#34495e',
+                            width: 1
+                        },
                         fontSize: 60,
                         fontWeight: '900'
                     };
-                    const topText = new PIXI.Text('GIRE E GANHE', textOptions);
-                    const topTextAmount = new PIXI.Text('R$100 mil', {
-                        ...textOptions,
-                        dropShadow: true,
-                        dropShadowAlpha: 0.8,
-                        dropShadowAngle: 1.5,
-                        dropShadowBlur: 3,
-                        dropShadowColor: '#ae731e',
-                        dropShadowDistance: 4,
-                        fill: ['#ffda66', '#ffb118'],
-                        fontSize: 80,
+                    const topText = new PIXI.Text({
+                        text: 'GIRE E GANHE',
+                        style: textOptions
+                    });
+                    const topTextAmount = new PIXI.Text({
+                        text: 'R$100 mil',
+                        style: {
+                            ...textOptions,
+                            dropShadow: true,
+                            dropShadowAlpha: 0.8,
+                            dropShadowAngle: 1.5,
+                            dropShadowBlur: 3,
+                            dropShadowColor: '#ae731e',
+                            dropShadowDistance: 4,
+                            fill: '#ffda66',
+                            fontSize: 80
+                        }
                     });
                     topText.position.set(110);
                     topText.scale.set(1.25);
                     topTextAmount.position.set(210, 190);
-                    const topImage = new PIXI.Sprite.from(resources.spinHead.texture);
+                    const topImage = markRaw(PIXI.Sprite.from(tex('/assets/images/spin/spin-head.png')));
                     topImage.position.y=-11;
                     topImage.addChild(topText);
                     topImage.addChild(topTextAmount);
@@ -370,14 +407,9 @@
                     window.premioPositions = vm.premioPositions;
                     window.buttonSprite = vm.buttonSprite;
                     window.sounds = vm.sounds;
-                });
-                this.pixiLoader.onProgress.add((loader, resource) => {
-                    vm.pixiLoadingProgress = loader.progress;
-                });
-                this.pixiLoader.onComplete.add(() => {
-                    vm.pixiIsLoading = false;
-                    this.$emit('loaded');
-                });
+                }
+                vm.pixiIsLoading = false;
+                this.$emit('loaded');
             }
         },
         mounted() {

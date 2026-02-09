@@ -1,7 +1,7 @@
-import {createWebHistory, createRouter} from "vue-router";
+import { createWebHistory, createRouter } from "vue-router";
 import HomePage from "@/Pages/Home/HomePage.vue";
 import SportPage from "@/Pages/Sport/SportPage.vue";
-import {useAuthStore} from "@/Stores/Auth.js";
+import { useAuthStore } from "@/Stores/Auth.js";
 import AffiliatePage from "@/Pages/Profile/AffiliatePage.vue";
 import CassinoListPage from "@/Pages/Cassino/CassinoListPage.vue";
 import CassinoSearch from "@/Pages/Cassino/CassinoSearch.vue";
@@ -247,10 +247,10 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
-    if(to.meta?.auth) {
+    if (to.meta?.auth) {
         const auth = useAuthStore();
         auth.isAuth ? next() : next({ name: 'home' });
-    }else{
+    } else {
         next();
     }
 });

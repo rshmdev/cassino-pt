@@ -11,6 +11,8 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Exceptions\Halt;
+use Illuminate\Support\HtmlString;
+
 
 class GamesKeyPage extends Page implements HasForms
 {
@@ -59,6 +61,66 @@ class GamesKeyPage extends Page implements HasForms
     {
         return $form
             ->schema([
+
+                            Section::make('PLAYFIVER API')
+                ->description(new HtmlString('
+                    <div style="display: flex; align-items: center;">
+                        Nossa API fornece diversos jogos de slots e ao vivo. :
+                        <a class="dark:text-white" 
+                           style="
+                                font-size: 14px;
+                                font-weight: 600;
+                                width: 127px;
+                                display: flex;
+                                background-color: #f800ff;
+                                padding: 10px;
+                                border-radius: 11px;
+                                justify-content: center;
+                                margin-left: 10px;
+                           " 
+                           href="https://playfiver.app" 
+                           target="_blank">
+                            PAINEL PLAYFIVER
+                        </a>
+                        <a class="dark:text-white" 
+                           style="
+                                font-size: 14px;
+                                font-weight: 600;
+                                width: 127px;
+                                display: flex;
+                                background-color: #f800ff;
+                                padding: 10px;
+                                border-radius: 11px;
+                                justify-content: center;
+                                margin-left: 10px;
+                           " 
+                           href="https://t.me/playfiver" 
+                           target="_blank">
+                            GRUPO TELEGRAM
+                        </a>
+                    </div>
+                    <b>Sua URL de Callback :  ' . url("/playfiver/webhook", [], true) . "</b>"))
+                
+                ->schema([
+                Section::make('CHAVES DE ACESSO PLAYFIVER')
+                        ->description('Você pode obter suas chaves de acesso no painel da Playfiver ao criar o seu agente.')
+                        ->schema([
+                            TextInput::make('playfiver_code')
+                                ->label('CÓDIGO DO AGENTE')
+                                ->placeholder('Digite aqui o código do agente')
+                                ->maxLength(191),
+
+                            TextInput::make('playfiver_token')
+                                ->label('AGENTE TOKEN')
+                                ->placeholder('Digite aqui o token do agente')
+                                ->maxLength(191),
+                            TextInput::make('playfiver_secret')
+                                ->label('AGENTE SECRETO')
+                                ->placeholder('Digite aqui o código secreto do agente')
+                                ->maxLength(191),    
+                        ])->columns(3),
+                ]),
+                
                 Section::make('Venix Games')
                     ->description('Ajustes de credenciais para a Venix Api, precisa de credito? acesse: https://venix.games ')
                     ->collapsible()

@@ -19,6 +19,7 @@ use App\Traits\Providers\VenixCGTrait;
 use App\Traits\Providers\VeniXTrait;
 use App\Traits\Providers\VibraTrait;
 use App\Traits\Providers\WorldSlotTrait;
+use App\Traits\Providers\PlayFiverTrait;
 use Illuminate\Http\Request;
 
 class GameController extends Controller
@@ -31,7 +32,8 @@ class GameController extends Controller
         VeniXTrait,
         EvergameTrait,
         PlayGamingTrait,
-        VenixCGTrait;
+        VenixCGTrait,
+        PlayFiverTrait;
 
     /**
      * @dev venixplataformas
@@ -258,6 +260,18 @@ class GameController extends Controller
 
                             return response()->json(['error' => $worldslotLaunch, 'status' => false ], 400);
 
+                        case 'play_fiver':
+                            $playfiver = self::playFiverLaunch($game->game_id, $game->only_demo);
+
+                            if(isset($playfiver['launch_url'])) {
+                                return response()->json([
+                                    'game' => $game,
+                                    'gameUrl' => $playfiver['launch_url'],
+                                    'token' => $token
+                                ]);
+                            }
+                            
+                            return response()->json(['error' => $playfiver['msg'] ?? 'Erro desconhecido', 'status' => false ], 400);
                     }
                 }
                 return response()->json(['error' => 'Você precisa ter saldo para jogar', 'status' => false, 'action' => 'deposit' ], 200);
@@ -294,7 +308,7 @@ class GameController extends Controller
 
         $games = $query
             ->where('status', 1)
-            ->paginate(12)->appends(request()->query());
+            ->paginate(24)->appends(request()->query());
 
         return response()->json(['games' => $games]);
     }
@@ -306,6 +320,11 @@ class GameController extends Controller
     public function webhookGoldApiMethod(Request $request)
     {
         return self::WebhooksFivers($request);
+    }
+
+    public function webhookPlayFiver(Request $request)
+    {
+        return self::webhookPlayFiverAPI($request);
     }
 
     /**

@@ -163,12 +163,14 @@ class WithdrawalResource extends Resource
                                 \Filament\Notifications\Actions\Action::make('view')
                                     ->label('Confirmar')
                                     ->button()
-                                    ->url(route('digitopay.cancelwithdrawal', ['id' => $withdrawal->id, 'action' => 'user']))
+                                    ->url(route('suitpay.cancelwithdrawal', ['id' => $withdrawal->id]))
                                     ->close(),
                                 \Filament\Notifications\Actions\Action::make('undo')
                                     ->color('gray')
                                     ->label('Cancelar')
-                                    ->action(function(Withdrawal $withdrawal) {})
+                                    ->action(function(Withdrawal $withdrawal) {
+
+                                    })
                                     ->close(),
                             ])
                             ->send();
@@ -188,12 +190,14 @@ class WithdrawalResource extends Resource
                                 \Filament\Notifications\Actions\Action::make('view')
                                     ->label('Confirmar')
                                     ->button()
-                                    ->url(route('digitopay.withdrawal', ['id' => $withdrawal->id,'action' => 'user']))
+                                    ->url(route('suitpay.withdrawal', ['id' => $withdrawal->id]))
                                     ->close(),
                                 \Filament\Notifications\Actions\Action::make('undo')
                                     ->color('gray')
                                     ->label('Cancelar')
-                                    ->action(function(Withdrawal $withdrawal) {})
+                                    ->action(function(Withdrawal $withdrawal) {
+
+                                    })
                                     ->close(),
                             ])
                             ->send();
@@ -209,7 +213,6 @@ class WithdrawalResource extends Resource
                 Tables\Actions\CreateAction::make(),
             ]);
     }
-
 
 
     /**

@@ -332,6 +332,7 @@ class Core
             'fivers' => 'Fivers',
             'kagaming' => 'KaGaming',
             'worldslot' => 'Worldslot',
+            'play_fiver' => 'Play Fiver',
             'games2_api' => 'Games2Api',
             'slotegrator' => 'Slotegrator',
             'vibra_gaming' => 'Vibra Gaming',
@@ -977,33 +978,25 @@ class Core
      */
     public static function getSetting()
     {
-        $setting = null;
-        if(Cache::has('setting')) {
-            $setting = Cache::get('setting');
-        }else{
-            $setting = Setting::select(
-                'software_name',
-                'software_description',
-                'software_logo_white',
-                'software_logo_black',
-                'currency_code',
-                'decimal_format',
-                'currency_position',
-                'prefix',
-                'storage',
-                'min_deposit',
-                'max_deposit',
-                'min_withdrawal',
-                'max_withdrawal',
-                'initial_bonus',
-                'digitopay_is_enable',
-                'sharkpay_is_enable'
-            )->first();
-
-            Cache::put('setting', $setting);
-        }
-
-        return $setting;
+        return Setting::select(
+            'software_name',
+            'software_description',
+            'software_logo_white',
+            'software_logo_black',
+            'currency_code',
+            'decimal_format',
+            'currency_position',
+            'prefix',
+            'storage',
+            'min_deposit',
+            'max_deposit',
+            'min_withdrawal',
+            'max_withdrawal',
+            'initial_bonus',
+            'digitopay_is_enable',
+            'sharkpay_is_enable',
+            'disable_spin'
+        )->first();
     }
 
     /**
