@@ -104,6 +104,31 @@ class GatewayPage extends Page
                             ->placeholder('Digite o client secret')
                             ->maxLength(191)
                             ->columnSpanFull(),
+                    ]),
+                Section::make('TriboPay')
+                    ->description('Ajustes de credenciais para a TriboPay')
+                    ->schema([
+                        TextInput::make('tribopay_uri')
+                            ->label('Client URI')
+                            ->default('https://api.tribopay.com.br/api/public/v1')
+                            ->placeholder('https://api.tribopay.com.br/api/public/v1')
+                            ->maxLength(191)
+                            ->columnSpanFull(),
+                        TextInput::make('tribopay_cliente_id')
+                             ->label('Client ID (Optional)')
+                             ->placeholder('Digite o Client ID')
+                             ->maxLength(191)
+                             ->columnSpanFull(),
+                        TextInput::make('tribopay_cliente_secret')
+                             ->label('Client Secret (Optional)')
+                             ->placeholder('Digite o Client Secret')
+                             ->maxLength(191)
+                             ->columnSpanFull(),
+                        TextInput::make('tribopay_api_token')
+                             ->label('API Token')
+                             ->placeholder('Digite o seu API Token')
+                             ->maxLength(191)
+                             ->columnSpanFull(),
                     ])
             ])
             ->statePath('data');

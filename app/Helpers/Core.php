@@ -995,6 +995,7 @@ class Core
             'initial_bonus',
             'digitopay_is_enable',
             'sharkpay_is_enable',
+            'tribopay_is_enable',
             'disable_spin'
         )->first();
     }

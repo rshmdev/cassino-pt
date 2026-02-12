@@ -60,6 +60,7 @@ class Setting extends Model
 
         'digitopay_is_enable',
         'sharkpay_is_enable',
+        'tribopay_is_enable',
 
         /// withdrawal limit
         'withdrawal_limit',

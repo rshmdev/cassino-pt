@@ -303,6 +303,7 @@ class GameController extends Controller
         if (isset($request->searchTerm) && !empty($request->searchTerm) && strlen($request->searchTerm) > 2) {
             $query->whereLike(['game_code', 'game_name', 'description', 'distribution', 'provider.name'], $request->searchTerm);
         }else{
+            $query->orderByRaw('CASE WHEN id = 23 THEN 0 ELSE 1 END');
             $query->orderBy('views', 'desc');
         }
 

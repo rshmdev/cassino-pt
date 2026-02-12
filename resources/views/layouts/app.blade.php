@@ -11,7 +11,7 @@
         @endif
 
         <link rel="stylesheet" href="{{ asset('assets/css/fontawesome.min.css') }}">
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&family=Roboto+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100&display=swap" rel="stylesheet">        <title>{{ env('APP_NAME') }}</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&family=Roboto+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100&display=swap" rel="stylesheet">        <title>{{ config('app.name') }}</title>
 
         <!-- CSRF Token -->
         <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -111,7 +111,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body color-theme="dark" class="bg-base text-gray-800 dark:text-gray-300 ">
-        <div id="viperpro"></div>
+        <div id="app"></div>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.0.0/datepicker.min.js"></script>
         <script>

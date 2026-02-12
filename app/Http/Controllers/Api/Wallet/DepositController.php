@@ -4,15 +4,12 @@ namespace App\Http\Controllers\Api\Wallet;
 
 use App\Http\Controllers\Controller;
 use App\Models\Deposit;
-use App\Traits\Gateways\DigitoPayTrait;
-use App\Traits\Gateways\SharkPayTrait;
-use App\Traits\Gateways\SuitpayTrait;
+use App\Traits\Gateways\TriboPayTrait;
 use Illuminate\Http\Request;
 
 class DepositController extends Controller
 {
-    Use SharkPayTrait;
-    Use SuitpayTrait;
+    use TriboPayTrait;
 
 
     /**
@@ -21,14 +18,7 @@ class DepositController extends Controller
      */
     public function submitPayment(Request $request)
     {
-        switch ($request->gateway) {
-            case 'sharkpay':
-                return self::requestQrcodeSharkPay($request);
-            case 'suitpay':
-                return self::requestQrcode($request);
-            default:
-                return response()->json(['message' => 'Gateway não encontrado'], 400);
-        }
+        return self::requestQrcode($request);
     }
 
     /**
@@ -36,14 +26,7 @@ class DepositController extends Controller
      */
     public function consultStatusTransactionPix(Request $request)
     {
-        switch ($request->gateway) {
-            case 'sharkpay':
-                return self::consultStatusTransactionSharkpay($request->idTransaction);
-            case 'suitpay':
-                return self::consultStatusTransaction($request);
-            default:
-                return response()->json(['message' => 'Gateway não encontrado'], 400);
-        }
+        return self::consultStatusTransaction($request);
     }
 
     /**

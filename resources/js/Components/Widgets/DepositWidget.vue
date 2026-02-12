@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col h-full bg-[#1A1C20] text-gray-300 font-sans p-4 rounded-xl">
+    <div class="flex flex-col w-full h-full bg-[#1A1C20] text-gray-300 font-sans p-4 rounded-xl">
         <!-- Loading State -->
         <div v-if="isLoadingWallet || !serverSetting" class="flex flex-col items-center justify-center h-full min-h-[400px]">
             <svg aria-hidden="true" class="w-10 h-10 text-gray-700 animate-spin fill-primary" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -242,7 +242,9 @@
             },
             determineGateway() {
                 // Determine which gateway to use based on settings
+                console.log(this.serverSetting);
                 if (this.serverSetting.sharkpay_is_enable) return 'sharkpay';
+                if (this.serverSetting.tribopay_is_enable) return 'tribopay';
                 if (this.serverSetting.suitpay_is_enable) return 'suitpay';
                 if (this.serverSetting.digitopay_is_enable) return 'digitopay';
                 return 'suitpay'; // Default

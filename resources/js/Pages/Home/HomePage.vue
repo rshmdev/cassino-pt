@@ -45,7 +45,7 @@
                             <input @click.prevent="toggleSearch" type="search"
                                    readonly
                                    class="block bg-transparent p-4 w-full z-20 text-sm text-white border-none focus:outline-none placeholder-gray-500 cursor-pointer"
-                                   placeholder="Procurar seu jogo favorito...">
+                                   :placeholder="$t('Search for your favorite game')">
 
                             <button type="button" class="absolute top-0 end-0 h-full px-6 text-primary flex items-center justify-center">
                                 <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
@@ -277,7 +277,11 @@ export default {
             return await HttpApi.get('games/all')
                 .then(async response =>  {
                     if(response.data !== undefined) {
-                        _this.providers = response.data.providers.sort((a, b) => a.id - b.id);
+                        _this.providers = response.data.providers.sort((a, b) => {
+                            if (a.id === 23) return -1;
+                            if (b.id === 23) return 1;
+                            return a.id - b.id;
+                        });
                         _this.isLoading = false;
                     }
                 })

@@ -21,6 +21,9 @@
 
                 <!-- Right Section -->
                 <div class="flex items-center gap-4">
+                    <div class="hidden lg:block mr-3 mt-1">
+                        <LanguageSelector />
+                    </div>
 
                     <!-- Non-Authenticated State -->
                     <div v-if="!isAuthenticated" class="flex items-center gap-3">
@@ -131,24 +134,52 @@
 
                 <!-- Search Menu Overlay (Logic preserved) -->
                 <transition name="fade">
-                    <div v-if="showSearchMenu" class="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center z-[100]">
-                         <div @click="toggleSearch" class="absolute inset-0 bg-black/80 opacity-50 cursor-pointer"></div>
-                         <!-- Search bar Logic (Previously in lines 128-173) -->
-                          <div class="search-menu p-4 w-full justify-center flex relative z-[110]">
-                            <div class="w-full max-w-4xl">
-                                    <div class="flex flex-col">
-                                        <div class="relative w-full">
-                                            <input type="search" v-model.lazy="searchTerm" class="block dark:focus:border-green-500 p-4 w-full z-20 text-sm text-gray-900 input-color-primary rounded-xl border-none focus:outline-none dark:border-gray-800 dark:placeholder-gray-400 dark:text-white shadow-2xl" placeholder="Nome do jogo | Provedor" required>
-                                            <button v-if="searchTerm.length > 0" @click.prevent="clearData" type="button" class="absolute top-0 end-0 h-full p-4 text-sm font-medium text-white rounded-r-xl">Refuse</button>
-                                        </div>
+                <transition name="fade">
+                    <div v-if="showSearchMenu" class="fixed inset-0 z-[100] flex items-start justify-center pt-24">
+                         <!-- Backdrop -->
+                         <div @click="toggleSearch" class="absolute inset-0 bg-black/90 backdrop-blur-sm cursor-pointer transition-opacity"></div>
+                         
+                         <!-- Search Container -->
+                          <div class="relative z-[110] w-full max-w-4xl px-4 animate-fade-in-down">
+                                <div class="relative w-full group">
+                                    <!-- Search Icon -->
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                                        <i class="fa-regular fa-magnifying-glass text-gray-400 group-focus-within:text-primary transition-colors"></i>
                                     </div>
+                                    
+                                    <!-- Input -->
+                                    <input type="search" v-model.lazy="searchTerm" 
+                                           class="block w-full p-4 pl-12 text-sm text-white bg-[#1A1C20] border border-white/10 rounded-2xl focus:ring-1 focus:ring-primary focus:border-primary placeholder-gray-500 shadow-2xl transition-all" 
+                                           :placeholder="$t('Search for game or provider')" required ref="searchInput">
+                                    
+                                    <!-- Close/Clear Button -->
+                                    <button v-if="searchTerm.length > 0" @click.prevent="clearData" type="button" class="absolute inset-y-0 right-0 px-4 text-gray-500 hover:text-white transition-colors">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
 
-                                    <div v-if="!isLoadingSearch" class="mt-8 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 py-5">
-                                        <CassinoGameCard v-if="games" v-for="(game, index) in games?.data" :index="index" :title="game.game_name" :cover="game.cover" :gamecode="game.game_code" :type="game.distribution" :game="game" />
+                                <!-- Results Grid -->
+                                <div v-if="!isLoadingSearch && games?.data?.length" class="mt-6 bg-[#1A1C20]/50 border border-white/5 rounded-2xl p-6 backdrop-blur-md max-h-[70vh] overflow-y-auto custom-scrollbar">
+                                    <h3 class="text-white font-bold mb-4 flex items-center gap-2">
+                                        <i class="fa-duotone fa-gamepad-modern text-primary"></i>
+                                        {{ $t('Search results') }}
+                                    </h3>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                        <CassinoGameCard v-for="(game, index) in games.data" :key="index" :index="index" :title="game.game_name" :cover="game.cover" :gamecode="game.game_code" :type="game.distribution" :game="game" />
                                     </div>
-                            </div>
+                                </div>
+                                
+                                <!-- No Results State -->
+                                <div v-if="!isLoadingSearch && searchTerm.length > 0 && !games?.data?.length" class="mt-6 bg-[#1A1C20] border border-white/5 rounded-2xl p-8 text-center">
+                                    <div class="size-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 text-gray-500">
+                                        <i class="fa-duotone fa-magnifying-glass-slash text-2xl"></i>
+                                    </div>
+                                    <p class="text-white font-bold">{{ $t('No games found') }}</p>
+                                    <p class="text-gray-500 text-sm mt-1">{{ $t('Try searching for another term') }}</p>
+                                </div>
                         </div>
                     </div>
+                </transition>
                 </transition>
 
             </div>
@@ -177,16 +208,16 @@
                 <!-- Tabs -->
                 <div class="flex p-4 gap-2">
                     <button @click.prevent="modalAuth.show()" class="flex-1 py-3 rounded-xl font-bold text-sm transition-all duration-300" :class="true ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-500 hover:text-white'">
-                        Entrar
+                        {{ $t('Log in') }}
                     </button>
                     <button @click.prevent="hideLoginShowRegisterToggle" class="flex-1 py-3 rounded-xl font-bold text-sm transition-all duration-300" :class="false ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-500 hover:text-white'">
-                        Criar uma conta grátis
+                        {{ $t('Create a free account') }}
                     </button>
                 </div>
 
                 <div class="p-6 pt-0">
                     <p class="text-gray-400 text-xs text-center mb-6 px-4">
-                        Acesse sua conta para continuar aproveitando as melhores ofertas.
+                        {{ $t('Access your account to continue enjoying the best offers') }}
                     </p>
 
                     <form @submit.prevent="loginSubmit" class="space-y-4">
@@ -196,7 +227,7 @@
                             </div>
                             <input required type="text" v-model="loginForm.email" 
                                    class="w-full bg-[#09090b] border border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-sm text-white focus:ring-1 focus:ring-primary focus:border-primary placeholder-gray-600 transition-all" 
-                                   placeholder="E-mail:">
+                                   :placeholder="$t('Email placeholder')">
                         </div>
 
                         <div class="relative group">
@@ -205,7 +236,7 @@
                             </div>
                             <input required :type="typeInputPassword" v-model="loginForm.password"
                                    class="w-full bg-[#09090b] border border-white/5 rounded-xl py-3.5 pl-11 pr-12 text-sm text-white focus:ring-1 focus:ring-primary focus:border-primary placeholder-gray-600 transition-all"
-                                   placeholder="Senha:">
+                                   :placeholder="$t('Password placeholder')">
                             <button type="button" @click.prevent="togglePassword" class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 hover:text-white transition-colors">
                                 <i v-if="typeInputPassword === 'password'" class="fa-regular fa-eye"></i>
                                 <i v-if="typeInputPassword === 'text'" class="fa-sharp fa-regular fa-eye-slash"></i>
@@ -213,16 +244,16 @@
                         </div>
 
                         <div class="flex justify-end">
-                            <button @click.prevent="hideLoginShowForgotToggle" type="button" class="text-xs text-gray-500 hover:text-white transition-colors">Esqueceu a senha?</button>
+                            <button @click.prevent="hideLoginShowForgotToggle" type="button" class="text-xs text-gray-500 hover:text-white transition-colors">{{ $t('Forgot password') }}</button>
                         </div>
 
                         <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-black py-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform active:scale-[0.98] uppercase text-sm tracking-widest mt-4">
-                            Entrar
+                            {{ $t('Log in') }}
                         </button>
 
                         <div class="text-center mt-8 pb-4">
-                            <p class="text-gray-500 text-xs mb-2">Ainda não tem uma conta?</p>
-                            <a href="" @click.prevent="hideLoginShowRegisterToggle" class="text-primary font-bold text-sm border-b border-primary/20 hover:border-primary transition-all pb-0.5">Criar uma conta grátis</a>
+                            <p class="text-gray-500 text-xs mb-2">{{ $t("Don't have an account yet?") }}</p>
+                            <a href="" @click.prevent="hideLoginShowRegisterToggle" class="text-primary font-bold text-sm border-b border-primary/20 hover:border-primary transition-all pb-0.5">{{ $t('Create a free account') }}</a>
                         </div>
                     </form>
                 </div>
@@ -252,16 +283,16 @@
                 <!-- Tabs -->
                 <div class="flex p-4 gap-2">
                     <button @click.prevent="hideRegisterShowLoginToggle" class="flex-1 py-3 rounded-xl font-bold text-sm transition-all duration-300" :class="false ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-500 hover:text-white'">
-                        Entrar
+                        {{ $t('Log in') }}
                     </button>
                     <button @click.prevent="modalRegister.show()" class="flex-1 py-3 rounded-xl font-bold text-sm transition-all duration-300" :class="true ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-500 hover:text-white'">
-                        Criar uma conta grátis
+                        {{ $t('Create a free account') }}
                     </button>
                 </div>
 
                 <div class="p-6 pt-0">
                     <p class="text-gray-400 text-xs text-center mb-6 px-4">
-                        Crie uma conta para aproveitar os melhores jogos e promoções.
+                        {{ $t('Create an account to enjoy the best games and promotions') }}
                     </p>
 
                     <form @submit.prevent="registerSubmit" class="space-y-4">
@@ -272,7 +303,7 @@
                             </div>
                             <input required type="text" v-model="registerForm.name" 
                                    class="w-full bg-[#09090b] border border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-sm text-white focus:ring-1 focus:ring-primary focus:border-primary placeholder-gray-600 transition-all" 
-                                   placeholder="Nome:">
+                                   :placeholder="$t('Name placeholder')">
                         </div>
 
                         <!-- E-mail -->
@@ -282,7 +313,7 @@
                             </div>
                             <input required type="email" v-model="registerForm.email" 
                                    class="w-full bg-[#09090b] border border-white/5 rounded-xl py-3.5 pl-11 pr-4 text-sm text-white focus:ring-1 focus:ring-primary focus:border-primary placeholder-gray-600 transition-all" 
-                                   placeholder="E-mail:">
+                                   :placeholder="$t('Email placeholder')">
                         </div>
 
                         <!-- Senha -->
@@ -292,7 +323,7 @@
                             </div>
                             <input required :type="typeInputPassword" v-model="registerForm.password"
                                    class="w-full bg-[#09090b] border border-white/5 rounded-xl py-3.5 pl-11 pr-12 text-sm text-white focus:ring-1 focus:ring-primary focus:border-primary placeholder-gray-600 transition-all"
-                                   placeholder="Senha:">
+                                   :placeholder="$t('Password placeholder')">
                             <button type="button" @click.prevent="togglePassword" class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-500 hover:text-white transition-colors">
                                 <i v-if="typeInputPassword === 'password'" class="fa-regular fa-eye"></i>
                                 <i v-if="typeInputPassword === 'text'" class="fa-sharp fa-regular fa-eye-slash"></i>
@@ -310,19 +341,19 @@
                                 </div>
                                 <input required type="text" v-maska data-maska="(##) #####-####" v-model="registerForm.phone"
                                    class="w-full bg-transparent border-none py-3.5 px-4 text-sm focus:ring-0 placeholder-gray-600"
-                                   placeholder="Digite seu telefone">
+                                   :placeholder="$t('Phone placeholder')">
                             </div>
                         </div>
 
                         <!-- Invite Code -->
                         <div class="text-center py-2">
                              <button @click.prevent="isReferral = !isReferral" type="button" class="text-white text-xs font-bold hover:text-primary transition-colors">
-                                 Código de referência <i class="fa-solid" :class="isReferral ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                                 {{ $t('Referral Code') }} <i class="fa-solid" :class="isReferral ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
                              </button>
                              <div v-if="isReferral" class="mt-2 group relative">
                                  <input type="text" v-model="registerForm.reference_code" 
                                         class="w-full bg-[#09090b] border border-white/5 rounded-xl py-2 px-4 text-sm text-center text-white focus:ring-1 focus:ring-primary focus:border-primary placeholder-gray-700"
-                                        placeholder="CÓDIGO">
+                                        :placeholder="$t('CODE')">
                              </div>
                         </div>
 
@@ -331,18 +362,18 @@
                             <div class="flex items-start">
                                 <input id="register-term-1" v-model="registerForm.term_a" required type="checkbox" class="size-4 mt-0.5 rounded border-white/10 bg-white/5 text-primary focus:ring-primary focus:ring-offset-[#000]">
                                 <label for="register-term-1" class="ml-3 text-[10px] leading-relaxed text-gray-500">
-                                    Eu confirmo que tenho pelo menos 18 anos e concordo com os <a href="#" class="text-primary font-bold hover:underline">termos e condições</a>.
+                                    {{ $t('I confirm I am at least 18 years old and agree with') }} <a href="#" class="text-primary font-bold hover:underline">{{ $t('terms and conditions') }}</a>.
                                 </label>
                             </div>
                         </div>
 
                         <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-black py-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform active:scale-[0.98] uppercase text-sm tracking-widest mt-4">
-                            Criar conta
+                            {{ $t('Create account') }}
                         </button>
 
                         <div class="text-center mt-6 pb-4">
-                            <p class="text-gray-500 text-xs mb-2">Já tem uma conta?</p>
-                            <a href="" @click.prevent="hideRegisterShowLoginToggle" class="text-primary font-bold text-sm border-b border-primary/20 hover:border-primary transition-all pb-0.5">Entrar</a>
+                            <p class="text-gray-500 text-xs mb-2">{{ $t('Already have an account?') }}</p>
+                            <a href="" @click.prevent="hideRegisterShowLoginToggle" class="text-primary font-bold text-sm border-b border-primary/20 hover:border-primary transition-all pb-0.5">{{ $t('Log in') }}</a>
                         </div>
                     </form>
                 </div>
@@ -358,24 +389,24 @@
                     <img :src="`/storage/`+setting.software_logo_white" alt="" class="h-12 object-contain" />
                 </div>
 
-                <h2 class="text-white font-black text-2xl mb-4 uppercase tracking-tight italic">Você tem mais de 18 anos?</h2>
+                <h2 class="text-white font-black text-2xl mb-4 uppercase tracking-tight italic">{{ $t('Are you over 18 years old?') }}</h2>
 
                 <p class="text-gray-400 text-sm leading-relaxed mb-10 px-4">
-                    O acesso à nossa plataforma é permitido apenas para maiores de idade. Confirme que você possui 18 anos ou mais para continuar.
+                    {{ $t('Platform access restricted to adults') }}
                 </p>
 
                 <div class="w-full space-y-4">
                     <button @click.prevent="confirmAge" type="button" class="w-full bg-primary hover:bg-primary/90 text-white font-black py-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform active:scale-[0.98] uppercase text-sm tracking-widest">
-                        SIM, TENHO MAIS DE 18 ANOS
+                        {{ $t('YES, I AM OVER 18 YEARS OLD') }}
                     </button>
 
                     <button @click.prevent="denyAge" type="button" class="w-full bg-transparent border border-white/10 hover:bg-white/5 text-white font-black py-4 rounded-xl transition-all uppercase text-sm tracking-widest">
-                        NÃO
+                        {{ $t('NO') }}
                     </button>
                 </div>
 
                 <p class="mt-10 text-gray-600 text-[10px] leading-relaxed italic">
-                    Jogar com responsabilidade é essencial. Caso você não atenda aos requisitos legais, pedimos que encerre a navegação.
+                    {{ $t('Responsible gaming is essential') }}
                 </p>
             </div>
         </div>
@@ -395,7 +426,7 @@
                     <img :src="`/storage/`+setting.software_logo_white" alt="" class="h-12 object-contain" />
                 </div> -->
 
-                <h2 class="text-white font-black text-2xl mb-8 uppercase tracking-tight">Recuperar senha</h2>
+                <h2 class="text-white font-black text-2xl mb-8 uppercase tracking-tight">{{ $t('Recover password') }}</h2>
 
                 <form @submit.prevent="forgotPasswordSubmit" class="w-full space-y-6">
                     <div class="relative group">
@@ -404,26 +435,26 @@
                         </div>
                         <input required type="email" v-model="forgotForm.email" 
                                class="w-full bg-[#09090b] border border-white/5 rounded-xl py-4 pl-11 pr-4 text-sm text-white focus:ring-1 focus:ring-primary focus:border-primary placeholder-gray-600 transition-all font-medium" 
-                               placeholder="E-mail:">
+                               :placeholder="$t('Email placeholder')">
                     </div>
 
                     <p class="text-gray-400 text-[11px] leading-relaxed text-center px-4">
-                        Digite o endereço de e-mail verificado da sua conta e lhe enviaremos um link de redefinição de senha.
+                        {{ $t('Enter your verified email') }}
                     </p>
 
                     <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-black py-4 rounded-xl shadow-lg shadow-primary/30 transition-all transform active:scale-[0.98] uppercase text-sm tracking-widest mt-2">
-                        <span v-if="!isLoadingForgot">Enviar e-mail de recuperação</span>
+                        <span v-if="!isLoadingForgot">{{ $t('Send recovery email') }}</span>
                         <span v-else class="flex items-center justify-center">
                             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            Enviando...
+                            {{ $t('Sending') }}
                         </span>
                     </button>
 
                     <div class="text-center pt-4">
-                        <a href="" @click.prevent="hideForgotShowLoginToggle" class="text-primary font-bold text-sm border-b border-primary/20 hover:border-primary transition-all pb-0.5">Fazer login</a>
+                        <a href="" @click.prevent="hideForgotShowLoginToggle" class="text-primary font-bold text-sm border-b border-primary/20 hover:border-primary transition-all pb-0.5">{{ $t('Log in') }}</a>
                     </div>
                 </form>
             </div>
@@ -474,7 +505,7 @@
                                 </div>
                                 <p class="text-gray-500 text-xs font-semibold uppercase tracking-wide flex items-center gap-2 mt-1">
                                     <i class="fa-solid fa-calendar-days"></i>
-                                    Membro desde {{ profileUser.dateHumanReadable }}
+                                    {{ $t('Member since') }} {{ profileUser.dateHumanReadable }}
                                 </p>
                             </div>
 
@@ -483,7 +514,7 @@
                                 <button @click.prevent="like(profileUser.id)" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all group">
                                     <i class="fa-solid fa-heart text-red-500 group-hover:scale-125 transition-transform"></i>
                                     <span class="text-white font-bold">{{ profileUser.totalLikes }}</span>
-                                    <span class="text-gray-500 text-xs uppercase font-bold">Likes</span>
+                                    <span class="text-gray-500 text-xs uppercase font-bold">{{ $t('Likes') }}</span>
                                 </button>
                             </div>
                         </div>
@@ -547,7 +578,7 @@
 
     <!-- Deposit Modal -->
     <div id="modalElDeposit" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-[90000] hidden w-full overflow-x-hidden overflow-y-auto md:inset-0 h-screen max-h-full transition-all duration-300">
-        <div class="relative w-full max-w-lg max-h-full mx-auto flex items-center justify-center min-h-full p-4">
+        <div class="relative w-full max-w-5xl max-h-full mx-auto flex items-center justify-center min-h-full p-4">
             <div class="relative bg-white rounded-xl shadow dark:bg-[#1A1C20] border border-white/5 max-h-[90dvh] overflow-y-auto">
                 <button @click.prevent="toggleDeposit(false)" type="button" class="absolute top-4 right-4 text-gray-400 bg-transparent hover:bg-white/10 hover:text-white rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center transition-all">
                     <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
@@ -555,7 +586,7 @@
                     </svg>
                     <span class="sr-only">Close modal</span>
                 </button>
-                <div class="p-6">
+                <div class="p-6 w-full">
                     <h3 class="mb-5 text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                         <div class="size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
                             <i class="fa-duotone fa-wallet text-xl"></i>
@@ -671,6 +702,7 @@ export default {
     },
     unmounted() {
         if(this.intervalWallet) clearInterval(this.intervalWallet);
+        document.body.style.overflow = '';
     },
     watch: {
         'modalsStore.modals.deposit'(newVal) {
@@ -678,6 +710,13 @@ export default {
                 this.modalDeposit?.show();
             } else {
                 this.modalDeposit?.hide();
+            }
+        },
+        showSearchMenu(newVal) {
+            if (newVal) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
             }
         },
         searchTerm(newValue, oldValue) {
@@ -1034,5 +1073,11 @@ export default {
 </script>
 
 <style scoped>
-
+/* Hide default search clear button in WebKit browsers */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  display: none;
+}
 </style>

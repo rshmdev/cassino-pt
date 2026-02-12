@@ -37,6 +37,12 @@ class Gateway extends Model
         // SharkPay
         'shark_public_key',
         'shark_private_key',
+
+        // TriboPay
+        'tribopay_uri',
+        'tribopay_cliente_id',
+        'tribopay_cliente_secret',
+        'tribopay_api_token',
     ];
 
     protected $hidden = array('updated_at');

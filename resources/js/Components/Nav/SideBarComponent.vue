@@ -8,6 +8,11 @@
         <!-- Scrollable Content -->
         <div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
             
+            <!-- Language Selector (Mobile Only) -->
+            <div class="lg:hidden w-full flex justify-end mb-2">
+                <LanguageSelector />
+            </div>
+
             <!-- Home Button -->
             <RouterLink :to="{ name: 'home' }" 
                         active-class="bg-[#1A1C20] border-primary/50 text-white"
@@ -143,10 +148,11 @@ import { useToast } from "vue-toastification";
 import { useAuthStore } from "@/Stores/Auth.js";
 import { useSettingStore } from "@/Stores/SettingStore.js";
 import { missionStore } from "@/Stores/MissionStore.js";
+import LanguageSelector from "@/Components/UI/LanguageSelector.vue";
 
 export default {
     props: [],
-    components: { RouterLink },
+    components: { RouterLink, LanguageSelector },
     setup() {
         const modalsStore = useModalStore();
         return { modalsStore };

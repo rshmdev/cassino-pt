@@ -11,9 +11,11 @@ export default defineConfig({
         }),
         vue({
             template: {
-                base: null,
-                includeAbsolute: false
-            }
+                transformAssetUrls: {
+                    base: null,
+                    includeAbsolute: false,
+                },
+            },
         }),
         i18n(),
     ],
