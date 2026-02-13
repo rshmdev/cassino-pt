@@ -72,7 +72,7 @@ class AuthController extends Controller
              $rules = [
                 'name'          => 'required|string',
                 'email'         => 'required|email|unique:users',
-                'password'      => ['required', 'confirmed', Rules\Password::min(6)],
+                'password'      => ['required', Rules\Password::min(6)],
                 'phone'         => 'required',
                 //'cpf'         => 'required',
                 'term_a'        => 'required',
