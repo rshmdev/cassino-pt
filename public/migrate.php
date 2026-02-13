@@ -32,9 +32,9 @@ if (!isset($_GET['key']) || $_GET['key'] !== $SECRET_KEY) {
 // ============================================================================
 define('LARAVEL_START', microtime(true));
 
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
-$app = require_once __DIR__ . '/bootstrap/app.php';
+$app = require_once __DIR__ . '/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
@@ -102,29 +102,15 @@ try {
 }
 
 // ============================================================================
-// LIMPAR CACHE (boa pratica apos deploy)
+// LIMPAR CACHE (necessario apos deploy)
 // ============================================================================
 echo "\n[CACHE] Limpando caches...\n";
 
 try {
-    Artisan::call('config:cache');
-    echo "  - config:cache OK\n";
+    Artisan::call('optimize:clear');
+    echo "  - optimize:clear OK (config, route, view, events limpos)\n";
 } catch (\Exception $e) {
-    echo "  - config:cache FALHOU: " . $e->getMessage() . "\n";
-}
-
-try {
-    Artisan::call('route:cache');
-    echo "  - route:cache OK\n";
-} catch (\Exception $e) {
-    echo "  - route:cache FALHOU: " . $e->getMessage() . "\n";
-}
-
-try {
-    Artisan::call('view:cache');
-    echo "  - view:cache OK\n";
-} catch (\Exception $e) {
-    echo "  - view:cache FALHOU: " . $e->getMessage() . "\n";
+    echo "  - optimize:clear FALHOU: " . $e->getMessage() . "\n";
 }
 
 $elapsed = round(microtime(true) - LARAVEL_START, 2);

@@ -68,6 +68,11 @@ trait PlayFiverTrait
     public static function webhookPlayFiverAPI(Request $request)
     {
         $tipo = $request->input("type");
+        Log::info('PlayFiver Webhook Recebido', [
+            'type' => $tipo,
+            'all_data' => $request->all(),
+            'ip' => $request->ip(),
+        ]);
         switch ($tipo) {
             case 'Balance':
                 return self::getBalancePlayFiverAPI($request);
@@ -81,9 +86,17 @@ trait PlayFiverTrait
     {
         $user = User::where("email", $dados->input("user_code"))->first();
         if ($user != null) {
-            $saldo = (float)$user->wallet->balance + (float)$user->wallet->balance_bonus + (float) +(float)$user->wallet->balance_withdrawal;
-            return response()->json(["msg" => "", "balance" => number_format($saldo, 2, ".", ".")]);
+            $saldo = (float)$user->wallet->balance + (float)$user->wallet->balance_bonus + (float)$user->wallet->balance_withdrawal;
+            Log::info('PlayFiver Balance Check', [
+                'user_email' => $dados->input("user_code"),
+                'balance' => $user->wallet->balance,
+                'balance_bonus' => $user->wallet->balance_bonus,
+                'balance_withdrawal' => $user->wallet->balance_withdrawal,
+                'total' => round($saldo, 2),
+            ]);
+            return response()->json(["msg" => "", "balance" => round($saldo, 2)]);
         } else {
+            Log::warning('PlayFiver Balance: User NOT FOUND', ['user_code' => $dados->input("user_code")]);
             return response()->json(["msg" => "INVALID_USER", "balance" => 0]);
         }
     }
@@ -215,8 +228,8 @@ trait PlayFiverTrait
     {
         $user = User::where("id", $id)->first();
         if ($user != null) {
-            $saldo = (float)$user->wallet->balance + (float)$user->wallet->balance_bonus + (float) +(float)$user->wallet->balance_withdrawal;
-            return $saldo;
+            $saldo = (float)$user->wallet->balance + (float)$user->wallet->balance_bonus + (float)$user->wallet->balance_withdrawal;
+            return round($saldo, 2);
         } else {
             return 0;
         }
