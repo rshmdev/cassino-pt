@@ -28,8 +28,11 @@ http_axios.interceptors.response.use(
     response => response,
     error => {
         if (error.response && [401, 403].includes(error.response.status)) {
-            //window.location.href = "/";
-            router.push('login');
+            const userStore = useAuthStore();
+            userStore.logout();
+            if (router.currentRoute.value.meta.requiresAuth) {
+                router.push({ name: 'home' });
+            }
         }
         return Promise.reject(error);
     }

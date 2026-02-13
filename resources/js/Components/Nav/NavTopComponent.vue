@@ -652,6 +652,7 @@ export default {
                 reference_code: '',
                 term_a: false,
                 agreement: false,
+                phone: '',
             },
             avatarUrl: '/assets/images/profile.jpg',
             isLoadingProfile: false,
@@ -743,21 +744,21 @@ export default {
         this.modalProfile = new Modal(document.getElementById('modalProfileEl'), {
             placement: 'center',
             backdrop: 'dynamic',
-            backdropClasses: 'bg-black bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40',
+            backdropClasses: 'bg-black/80 fixed inset-0 z-40',
             closable: false,
         });
 
         this.modalAuth = new Modal(document.getElementById('modalElAuth'), {
             placement: 'center',
             backdrop: 'dynamic',
-            backdropClasses: 'bg-black bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40',
+            backdropClasses: 'bg-black/80 fixed inset-0 z-40',
             closable: false,
         });
 
         this.modalForgot = new Modal(document.getElementById('modalElForgot'), {
             placement: 'center',
             backdrop: 'dynamic',
-            backdropClasses: 'bg-black bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40',
+            backdropClasses: 'bg-black/80 fixed inset-0 z-40',
             closable: false,
         });
 
@@ -776,7 +777,7 @@ export default {
         this.modalRegister = new Modal(document.getElementById('modalElRegister'), {
             placement: 'center',
             backdrop: 'dynamic',
-            backdropClasses: 'bg-gray-700 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40',
+            backdropClasses: 'bg-black/80 fixed inset-0 z-40',
             closable: false,
         });
 
@@ -786,7 +787,7 @@ export default {
             this.modalDeposit = new Modal(depositModalEl, {
                 placement: 'center',
                 backdrop: 'dynamic',
-                backdropClasses: 'bg-gray-900/80 fixed inset-0 z-[60]',
+                backdropClasses: 'bg-black/80 fixed inset-0 z-[60]',
                 closable: true,
                 onHide: () => {
                     this.modalsStore.toggleModal('deposit', false);
@@ -888,15 +889,25 @@ export default {
             const _toast = useToast();
             _this.isLoadingRegister = true;
 
+            _this.registerForm.password_confirmation = _this.registerForm.password;
+
             await HttpApi.post('/auth/register', _this.registerForm)
                 .then(response => {
                     _this.isLoadingRegister = false;
                     _this.modalRegister.toggle();
-                    _toast.success(_this.$t(response.data.message));
-                    
-                     _this.loginForm.email = _this.registerForm.email;
-                     _this.loginForm.password = _this.registerForm.password;
-                     _this.loginSubmit();
+
+                    if(response.data.access_token !== undefined) {
+                        const authStore = useAuthStore();
+                        authStore.setToken(response.data.access_token);
+                        authStore.setUser(response.data.user);
+                        authStore.setIsAuth(true);
+                        _toast.success(_this.$t('Your account has been created successfully'));
+                        _this.router.push({ name: 'home' });
+                    } else {
+                        _this.loginForm.email = _this.registerForm.email;
+                        _this.loginForm.password = _this.registerForm.password;
+                        _this.loginSubmit();
+                    }
                 })
                 .catch(error => {
                     const _this = this;
