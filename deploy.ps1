@@ -2,21 +2,19 @@
 #  DEPLOY AUTOMATIZADO - VIPERPRO -> HOSTINGER (FTP)
 #  
 #  USO:
-#    .\deploy.ps1                    # Deploy completo
+#    .\deploy.ps1                    # Deploy completo (sobrescreve tudo)
 #    .\deploy.ps1 -BuildFirst        # Roda npm run build antes do deploy
 #
 #  REQUISITO: WinSCP instalado (https://winscp.net/eng/download.php)
 #             Marque "Install .NET assembly" durante a instalacao
-#
-#  PRIMEIRA VEZ: Configure as variaveis abaixo com seus dados da Hostinger
 ##############################################################################
 
 param(
-    [switch]$BuildFirst    # Roda npm run build antes
+    [switch]$BuildFirst
 )
 
 # ============================================================================
-# CONFIGURACAO - PREENCHA COM SEUS DADOS DA HOSTINGER
+# CONFIGURACAO
 # ============================================================================
 $config = @{
     FtpHost     = "147.93.37.120"
@@ -28,21 +26,23 @@ $config = @{
     RemotePath  = "/public_html"
     
     WinSCPPath  = "C:\Program Files (x86)\WinSCP\WinSCPnet.dll"
+    
+    # URL do site (para rodar migrations)
+    SiteUrl     = "https://cassinovegas.bet"
+    MigrateKey  = "viperpro-migrate-2026-x9k2m"
 }
 
-# ============================================================================
-# PASTAS E ARQUIVOS PARA NAO ENVIAR (local -> remoto)
-# ============================================================================
+# Pastas/arquivos para NAO enviar
 $excludeLocal = @(
-    "storage",
-    "node_modules",
-    ".git",
-    ".idea",
-    ".vscode",
-    ".gemini",
-    "tests",
-    "stubs",
-    ".agent",
+    "storage/",
+    "node_modules/",
+    ".git/",
+    ".idea/",
+    ".vscode/",
+    ".gemini/",
+    "tests/",
+    "stubs/",
+    ".agent/",
     ".env",
     ".env.example",
     ".gitignore",
@@ -51,19 +51,12 @@ $excludeLocal = @(
     "build_log.txt",
     "package-lock.json",
     "deploy.ps1",
-    "deploy-config.json"
+    "deploy-config.json",
+    "*.log"
 )
 
 # ============================================================================
-# PASTAS/ARQUIVOS PARA PRESERVAR NO SERVIDOR (nao apagar)
-# ============================================================================
-$preserveRemote = @(
-    "/public_html/.env",
-    "/public_html/public/storage"
-)
-
-# ============================================================================
-# FUNCOES AUXILIARES
+# FUNCOES
 # ============================================================================
 
 function Write-Banner {
@@ -94,78 +87,8 @@ function Write-Step {
     Write-Host $Message
 }
 
-function Remove-RemoteDirectory {
-    param(
-        $Session,
-        [string]$RemotePath,
-        [string[]]$Preserve
-    )
-    
-    Write-Step "Listando arquivos no servidor..." "INFO"
-    
-    $remoteFiles = $Session.EnumerateRemoteFiles(
-        $RemotePath,
-        $null,
-        [WinSCP.EnumerationOptions]::AllDirectories
-    )
-    
-    # Separar arquivos e pastas, ordenar para deletar arquivos primeiro
-    $filesToDelete = @()
-    $dirsToDelete = @()
-    
-    foreach ($fileInfo in $remoteFiles) {
-        $fullPath = $fileInfo.FullName
-        
-        # Verificar se esta no caminho preservado
-        $skip = $false
-        foreach ($p in $Preserve) {
-            if ($fullPath -like "$p*" -or $fullPath -eq $p) {
-                $skip = $true
-                break
-            }
-        }
-        
-        if ($skip) { continue }
-        
-        if ($fileInfo.IsDirectory) {
-            $dirsToDelete += $fullPath
-        } else {
-            $filesToDelete += $fullPath
-        }
-    }
-    
-    $totalItems = $filesToDelete.Count + $dirsToDelete.Count
-    Write-Step "Encontrados $totalItems itens para remover (preservando $($Preserve.Count) caminhos)" "INFO"
-    
-    # Deletar arquivos primeiro
-    $deleted = 0
-    foreach ($file in $filesToDelete) {
-        try {
-            $Session.RemoveFile($file)
-            $deleted++
-            if ($deleted % 50 -eq 0) {
-                Write-Host "    Removidos $deleted/$($filesToDelete.Count) arquivos..." -ForegroundColor DarkGray
-            }
-        } catch {
-            Write-Host "    Falha ao remover: $file" -ForegroundColor DarkYellow
-        }
-    }
-    
-    # Deletar pastas (do mais profundo ao mais raso)
-    $dirsToDelete = $dirsToDelete | Sort-Object -Property Length -Descending
-    foreach ($dir in $dirsToDelete) {
-        try {
-            $Session.RemoveFile($dir)
-        } catch {
-            # Pasta pode nao estar vazia se tinha itens preservados
-        }
-    }
-    
-    Write-Step "Removidos $deleted arquivos e $($dirsToDelete.Count) pastas do servidor" "OK"
-}
-
 # ============================================================================
-# VERIFICACOES INICIAIS
+# VERIFICACOES
 # ============================================================================
 
 Write-Banner
@@ -177,24 +100,12 @@ if (-not (Test-Path $config.WinSCPPath)) {
         "C:\Program Files (x86)\WinSCP\WinSCPnet.dll",
         "$env:LOCALAPPDATA\Programs\WinSCP\WinSCPnet.dll"
     )
-    
     $found = $false
     foreach ($path in $altPaths) {
-        if (Test-Path $path) {
-            $config.WinSCPPath = $path
-            $found = $true
-            break
-        }
+        if (Test-Path $path) { $config.WinSCPPath = $path; $found = $true; break }
     }
-    
     if (-not $found) {
-        Write-Step "WinSCP nao encontrado!" "ERROR"
-        Write-Host ""
-        Write-Host "  Instale o WinSCP:" -ForegroundColor Yellow
-        Write-Host "    1. Acesse: https://winscp.net/eng/download.php" -ForegroundColor Gray
-        Write-Host "    2. Baixe e instale" -ForegroundColor Gray
-        Write-Host "    3. IMPORTANTE: Marque 'Install .NET assembly' na instalacao" -ForegroundColor Red
-        Write-Host ""
+        Write-Step "WinSCP nao encontrado! Instale: https://winscp.net" "ERROR"
         exit 1
     }
 }
@@ -205,46 +116,34 @@ if (-not (Test-Path $config.WinSCPPath)) {
 
 if ($BuildFirst) {
     Write-Step "Rodando build de producao..." "INFO"
-    
     Push-Location $config.LocalPath
     try {
-        $buildResult = & npm run build 2>&1
-        if ($LASTEXITCODE -eq 0) {
-            Write-Step "Build concluido com sucesso!" "OK"
-        }
-        else {
-            Write-Step "Erro no build! Verifique os erros acima." "ERROR"
-            Write-Host $buildResult -ForegroundColor Red
-            Pop-Location
-            exit 1
-        }
-    }
-    finally {
-        Pop-Location
-    }
+        & npm run build 2>&1 | Out-Null
+        if ($LASTEXITCODE -eq 0) { Write-Step "Build OK!" "OK" }
+        else { Write-Step "Erro no build!" "ERROR"; Pop-Location; exit 1 }
+    } finally { Pop-Location }
 }
 
 # ============================================================================
-# DEPLOY VIA FTP
+# DEPLOY - UPLOAD DIRETO (sobrescreve tudo)
 # ============================================================================
 
 Write-Host ""
 Write-Step "Local:  $($config.LocalPath)" "INFO"
 Write-Step "Remoto: $($config.FtpHost):$($config.RemotePath)" "INFO"
-Write-Step "Preservando: .env, public/storage" "WARN"
+Write-Step "Nao enviar: storage/, node_modules/, .git/, .env" "INFO"
 Write-Host ""
 
-# Carregar WinSCP .NET
+# Carregar WinSCP
 try {
     Add-Type -Path $config.WinSCPPath
     Write-Step "WinSCP carregado" "OK"
-}
-catch {
+} catch {
     Write-Step "Erro ao carregar WinSCP: $_" "ERROR"
     exit 1
 }
 
-# Configurar sessao FTP
+# Sessao FTP
 $sessionOptions = New-Object WinSCP.SessionOptions -Property @{
     Protocol   = [WinSCP.Protocol]::Ftp
     HostName   = $config.FtpHost
@@ -255,84 +154,107 @@ $sessionOptions = New-Object WinSCP.SessionOptions -Property @{
     GiveUpSecurityAndAcceptAnyTlsHostCertificate = $true
 }
 
-# Opcoes de transferencia
+# Transferencia com exclusoes
 $transferOptions = New-Object WinSCP.TransferOptions
 $transferOptions.TransferMode = [WinSCP.TransferMode]::Automatic
+$transferOptions.OverwriteMode = [WinSCP.OverwriteMode]::Overwrite
 
-# Montar FileMask para excluir pastas/arquivos locais do upload
-$excludeParts = @()
-foreach ($item in $excludeLocal) {
-    $excludeParts += "!$item"
-}
-$transferOptions.FileMask = "* | $($excludeParts -join '; ')"
-
-Write-Step "Exclusoes configuradas" "OK"
-Write-Host "    Nao enviar: $($excludeLocal -join ', ')" -ForegroundColor DarkGray
-Write-Host ""
+# Montar FileMask WinSCP
+$excludeParts = ($excludeLocal | ForEach-Object { "!$_" }) -join "; "
+$transferOptions.FileMask = "* | $excludeParts"
 
 $session = New-Object WinSCP.Session
 
 try {
     # Conectar
-    Write-Step "Conectando ao servidor FTP..." "INFO"
+    Write-Step "Conectando ao FTP..." "INFO"
     $session.Open($sessionOptions)
-    Write-Step "Conectado com sucesso!" "OK"
+    Write-Step "Conectado!" "OK"
     Write-Host ""
     
-    # PASSO 1: Limpar servidor (exceto preservados)
-    Write-Host "  ---- PASSO 1/2: LIMPANDO SERVIDOR ----" -ForegroundColor Yellow
-    Remove-RemoteDirectory -Session $session -RemotePath $config.RemotePath -Preserve $preserveRemote
+    # ================================================================
+    # SINCRONIZAR: Envia tudo que mudou, sobrescreve no servidor
+    # ================================================================
+    Write-Host "  ---- ENVIANDO ARQUIVOS ----" -ForegroundColor Yellow
+    Write-Step "Sincronizando arquivos (enviando alterados)..." "INFO"
+    Write-Host "    Isso pode levar alguns minutos..." -ForegroundColor DarkGray
     Write-Host ""
-    
-    # PASSO 2: Upload de tudo
-    Write-Host "  ---- PASSO 2/2: ENVIANDO ARQUIVOS ----" -ForegroundColor Yellow
-    Write-Step "Enviando arquivos... (isso pode levar alguns minutos)" "INFO"
     
     $startTime = Get-Date
     
-    $result = $session.PutFilesToDirectory(
+    # SynchronizeDirectories: envia apenas arquivos novos/alterados
+    # Muito mais rapido que deletar tudo + reupload
+    $syncResult = $session.SynchronizeDirectories(
+        [WinSCP.SynchronizationMode]::Remote,      # Local -> Remoto
         $config.LocalPath,
         $config.RemotePath,
-        $null,
-        $false,
+        $false,                                      # NAO deletar arquivos extras no servidor
+        $false,                                      # NAO espelhar
+        [WinSCP.SynchronizationCriteria]::Time,     # Comparar por data
         $transferOptions
     )
     
-    $result.Check()
+    $syncResult.Check()
     
     $elapsed = (Get-Date) - $startTime
-    $totalFiles = $result.Transfers.Count
+    $totalFiles = $syncResult.Uploads.Count
     
     Write-Host ""
-    Write-Step "$totalFiles arquivo(s) enviados em $([math]::Round($elapsed.TotalMinutes, 1)) minutos" "OK"
+    if ($totalFiles -eq 0) {
+        Write-Step "Nenhuma alteracao detectada. Tudo sincronizado!" "OK"
+    } else {
+        # Mostrar primeiros 20 arquivos enviados
+        $shown = 0
+        foreach ($upload in $syncResult.Uploads) {
+            if ($shown -lt 20) {
+                Write-Host "    >> $($upload.FileName)" -ForegroundColor DarkGray
+                $shown++
+            }
+        }
+        if ($totalFiles -gt 20) {
+            Write-Host "    ... e mais $($totalFiles - 20) arquivo(s)" -ForegroundColor DarkGray
+        }
+        Write-Host ""
+        Write-Step "$totalFiles arquivo(s) enviados em $([math]::Round($elapsed.TotalMinutes, 1)) min" "OK"
+    }
     
-}
-catch {
+} catch {
     Write-Step "Erro durante o deploy: $($_.Exception.Message)" "ERROR"
-    
-    if ($_.Exception.Message -like "*Authentication*" -or $_.Exception.Message -like "*login*") {
-        Write-Host ""
-        Write-Host "  Dica: Verifique suas credenciais FTP" -ForegroundColor Yellow
-        Write-Host "     - Usuario e senha estao corretos?" -ForegroundColor Gray
-        Write-Host "     - O acesso FTP esta ativo na Hostinger?" -ForegroundColor Gray
-    }
-    
-    if ($_.Exception.Message -like "*timeout*" -or $_.Exception.Message -like "*connect*") {
-        Write-Host ""
-        Write-Host "  Dica: Verifique a conexao" -ForegroundColor Yellow
-        Write-Host "     - O host FTP esta correto?" -ForegroundColor Gray
-        Write-Host "     - Firewall bloqueando porta 21?" -ForegroundColor Gray
-    }
-    
     exit 1
-    
-}
-finally {
+} finally {
     $session.Dispose()
+}
+
+# ============================================================================
+# RODAR MIGRATIONS + CACHE (via HTTP)
+# ============================================================================
+
+Write-Host ""
+Write-Host "  ---- MIGRATIONS & CACHE ----" -ForegroundColor Yellow
+
+$migrateUrl = "$($config.SiteUrl)/migrate.php?key=$($config.MigrateKey)"
+Write-Step "Rodando migrations via HTTP..." "INFO"
+
+try {
+    Start-Sleep -Seconds 3
+    $response = Invoke-WebRequest -Uri $migrateUrl -UseBasicParsing -TimeoutSec 120
+    
+    if ($response.StatusCode -eq 200) {
+        Write-Step "Migrations OK!" "OK"
+        Write-Host ""
+        foreach ($line in ($response.Content -split "`n")) {
+            if ($line.Trim()) { Write-Host "    $($line.Trim())" -ForegroundColor DarkGray }
+        }
+    } else {
+        Write-Step "Migration retornou status: $($response.StatusCode)" "WARN"
+    }
+} catch {
+    Write-Step "Migrations: $($_.Exception.Message)" "WARN"
+    Write-Host "    Rode manualmente: $migrateUrl" -ForegroundColor Yellow
 }
 
 Write-Host ""
 Write-Host "  ============================================================" -ForegroundColor Green
-Write-Host "    DEPLOY FINALIZADO COM SUCESSO!" -ForegroundColor Green
+Write-Host "    DEPLOY FINALIZADO!" -ForegroundColor Green
 Write-Host "  ============================================================" -ForegroundColor Green
 Write-Host ""
