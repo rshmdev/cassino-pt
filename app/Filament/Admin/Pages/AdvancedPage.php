@@ -2,8 +2,6 @@
 
 namespace App\Filament\Admin\Pages;
 
-use App\Traits\Providers\EvergameTrait;
-use App\Traits\Providers\WorldSlotTrait;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -18,7 +16,7 @@ set_time_limit(0);
 
 class AdvancedPage extends Page implements HasForms
 {
-    use InteractsWithForms, WorldSlotTrait, WithFileUploads, EvergameTrait;
+    use InteractsWithForms, WithFileUploads;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
@@ -50,65 +48,6 @@ class AdvancedPage extends Page implements HasForms
     public function mount(): void
     {
 
-    }
-
-    /**
-     * @param $type
-     * @return void
-     */
-    public function loadProvider($type)
-    {
-        self::getProviderWorldslot($type);
-        Notification::make()
-            ->title('Sucesso')
-            ->body('Provedores Carregados com sucesso')
-            ->success()
-            ->send();
-    }
-
-
-    /**
-     * @return void
-     */
-    public function loadGames()
-    {
-        self::getGamesWorldslot();
-        Notification::make()
-            ->title('Sucesso')
-            ->body('Jogos Carregados com sucesso')
-            ->success()
-            ->send();
-    }
-
-
-
-
-    /**
-     * @return void
-     */
-
-    public function loadProviderEvergame()
-    {
-        self::getProviderEvergame();
-        Notification::make()
-            ->title('Sucesso')
-            ->body('Provedores Carregados com sucesso')
-            ->success()
-            ->send();
-    }
-
-
-    /**
-     * @return void
-     */
-    public function loadGamesEvergame()
-    {
-        self::getGamesEvergame();
-        Notification::make()
-            ->title('Sucesso')
-            ->body('Jogos Carregados com sucesso')
-            ->success()
-            ->send();
     }
 
     /**
@@ -161,13 +100,8 @@ class AdvancedPage extends Page implements HasForms
             return;
         }
 
-        // Executar o comando Artisan para rodar as migrations
         Artisan::call('migrate');
 
-        // Você também pode adicionar a opção '--seed' para rodar os seeders, se necessário
-        // Artisan::call('migrate --seed');
-
-        // Obter a saída do comando, se necessário
         $this->output = Artisan::output();
         Notification::make()
             ->title('Sucesso')
@@ -190,13 +124,8 @@ class AdvancedPage extends Page implements HasForms
             return;
         }
 
-        // Executar o comando Artisan para rodar as migrations
         Artisan::call('migrate --seed');
 
-        // Você também pode adicionar a opção '--seed' para rodar os seeders, se necessário
-        // Artisan::call('migrate --seed');
-
-        // Obter a saída do comando, se necessário
         $this->output = Artisan::output();
         Notification::make()
             ->title('Sucesso')

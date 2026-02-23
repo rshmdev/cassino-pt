@@ -20,8 +20,6 @@ import SupportPage from "@/Pages/Home/SupportPage.vue";
 import PromotionPage from "@/Pages/Home/PromotionPage.vue";
 import SupportCenterPage from "@/Pages/Home/SupportCenterPage.vue";
 import DataPage from "@/Pages/ApiData/DataPage.vue";
-import StripeSuccess from "@/Pages/Gateway/StripeSuccess.vue";
-import StripeCancel from "@/Pages/Gateway/StripeCancel.vue";
 import FavoritePage from "@/Pages/Profile/FavoritePage.vue";
 import RecordPage from "@/Pages/Profile/RecordPage.vue";
 import BonusPage from "@/Pages/Home/BonusPage.vue";
@@ -54,16 +52,6 @@ export const routes = [
         name: 'resetPassword',
         path: '/reset-password/:token',
         component: ResetPassword
-    },
-    {
-        name: 'stripeSuccess',
-        path: '/stripe/success',
-        component: StripeSuccess
-    },
-    {
-        name: 'stripeCancel',
-        path: '/stripe/cancel',
-        component: StripeCancel
     },
     {
         name: 'support',

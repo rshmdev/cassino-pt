@@ -121,36 +121,6 @@ class GamesKeyPage extends Page implements HasForms
                         ])->columns(3),
                 ]),
                 
-                Section::make('Venix Games')
-                    ->description('Ajustes de credenciais para a Venix Api, precisa de credito? acesse: https://venix.games ')
-                    ->collapsible()
-                    ->collapsed(false)
-                    ->schema([
-                        TextInput::make('venixcg_api_url')
-                            ->label('Api URL')
-                            ->placeholder('Digite aqui a url API')
-                            ->readOnly()
-                            ->helperText('Recarga https://venix.games')
-                            ->maxLength(191)
-                            ->columnSpanFull(),
-                        TextInput::make('venixcg_agent_code')
-                            ->label('Agent Code')
-                            ->placeholder('Digite aqui o Agent Code')
-                            ->helperText('Recarga https://venix.games')
-                            ->maxLength(191),
-                        TextInput::make('venixcg_agent_token')
-                            ->label('Agent Token')
-                            ->placeholder('Digite aqui o Agent Token')
-                            ->helperText('Recarga https://venix.games')
-                            ->maxLength(191),
-                        TextInput::make('venixcg_agent_secret')
-                            ->label('Agent Secret')
-                            ->placeholder('Digite aqui a Agente Secret')
-                            ->helperText('Recarga https://venix.games')
-                            ->maxLength(191),
-                    ])
-                    ->columns(3),
-
             ])
             ->statePath('data');
     }

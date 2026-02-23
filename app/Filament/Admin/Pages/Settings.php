@@ -164,10 +164,7 @@ class Settings extends Page implements HasForms
                             'left' => 'Left',
                             'right' => 'Right',
                         ]),
-                        Toggle::make('digitopay_is_enable')->label('DigitoPay Ativo'),
-                        Toggle::make('sharkpay_is_enable')->label('Sharkpay Ativo'),
                         Toggle::make('tribopay_is_enable')->label('TriboPay Ativo'),
-                        Toggle::make('suitpay_is_enable')->label('Suitpay Ativo'),
                     ])->columns(4),
             ])
             ->statePath('data');

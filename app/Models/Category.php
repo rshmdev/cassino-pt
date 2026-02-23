@@ -30,7 +30,7 @@ class Category extends Model
     ];
 
     /**
-     * Games Slotegrator
+     * Games
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function games() : HasMany

@@ -3,14 +3,12 @@
 namespace App\Filament\Admin\Resources\DepositResource\Pages;
 
 use App\Filament\Admin\Resources\DepositResource;
-use App\Traits\Providers\FiversTrait;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 
 class EditDeposit extends EditRecord
 {
-    use FiversTrait;
     protected static string $resource = DepositResource::class;
 
     protected function getHeaderActions(): array

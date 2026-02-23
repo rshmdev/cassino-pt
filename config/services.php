@@ -84,20 +84,4 @@ return [
         'redirect' => env('FACEBOOK_REDIRECT'),
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Payment Gateways
-    |--------------------------------------------------------------------------
-    */
-    'stripe' => [
-        'enable' => env('STRIPE_ENABLED'),
-        'subscription' => env('STRIPE_SUBSCRIPTION_ENABLED'),
-        'base_uri' => env('STRIPE_BASE_URI'),
-        'webhook_uri' => env('STRIPE_WEBHOOK_URI'),
-        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
-        'api_key' => env('STRIPE_KEY'),
-        'api_secret' => env('STRIPE_SECRET'),
-        'class' => App\Services\Gateways\StripeService::class,
-    ],
-
 ];
