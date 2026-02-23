@@ -13,26 +13,9 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         'api/*',
-        'slotegrator/*',
-        'digitopay/*',
-        'digitopay/callback',
-        'suitpay/*',
+        'tribopay/*',
+        'veopag/*',
         'webhooks/*',
-        'salsa/*',
         'playfiver/*',
-        'fivers/*',
-        'gold_api',
-        'gold_api/*',
-        'kagaming/*',
-        'vibra/*',
-        'cron/*',
-        'venixcg',
-        'venixcg/*',
-        'ever/*',
-        'ever',
-        'playgaming',
-        'playgaming/*',
-        'playigaming_api',
-        'playigaming_api/*'
     ];
 }

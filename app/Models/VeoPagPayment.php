@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class GgrGamesWorldSlot extends Model
+class VeoPagPayment extends Model
 {
     use HasFactory;
 
@@ -16,7 +17,7 @@ class GgrGamesWorldSlot extends Model
      *
      * @var string
      */
-    protected $table = 'ggr_games_world_slots';
+    protected $table = 'veo_pag_payments';
     protected $appends = ['dateHumanReadable', 'createdAt'];
 
     /**
@@ -25,20 +26,38 @@ class GgrGamesWorldSlot extends Model
      * @var array
      */
     protected $fillable = [
+        'payment_id',
         'user_id',
-        'provider',
-        'game',
-        'balance_bet',
-        'balance_win',
-        'currency'
+        'withdrawal_id',
+        'pix_key',
+        'pix_type',
+        'amount',
+        'observation',
+        'status',
     ];
 
     /**
-     * @return BelongsTo
+     * Get status as human-readable text
      */
-    public function user() : BelongsTo
+    protected function status(): Attribute
     {
-        return $this->belongsTo(User::class);
+        return Attribute::make(
+            get: fn (string $value) => $this->getStatus($value),
+        );
+    }
+
+    /**
+     * @param $status
+     * @return string|void
+     */
+    private function getStatus($status)
+    {
+        switch ($status) {
+            case '1':
+                return 'pago';
+            case '0':
+                return 'pendente';
+        }
     }
 
     /**
@@ -55,5 +74,13 @@ class GgrGamesWorldSlot extends Model
     public function getDateHumanReadableAttribute()
     {
         return Carbon::parse($this->created_at)->diffForHumans();
+    }
+
+    /**
+     * @return BelongsTo
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

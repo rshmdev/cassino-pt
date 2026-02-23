@@ -53,58 +53,6 @@ class GatewayPage extends Page
     {
         return $form
             ->schema([
-                Section::make('Suitpay')
-                    ->description('Ajustes de credenciais para a Suitpay')
-                    ->schema([
-                        TextInput::make('suitpay_uri')
-                            ->label('Client URI')
-                            ->placeholder('Digite a url da api')
-                            ->maxLength(191)
-                            ->columnSpanFull(),
-                        TextInput::make('suitpay_cliente_id')
-                            ->label('Client ID')
-                            ->placeholder('Digite o client ID')
-                            ->maxLength(191)
-                            ->columnSpanFull(),
-                        TextInput::make('suitpay_cliente_secret')
-                            ->label('Client Secret')
-                            ->placeholder('Digite o client secret')
-                            ->maxLength(191)
-                            ->columnSpanFull(),
-                    ]),
-                Section::make('Sharkpay')
-                    ->description('Ajustes de credenciais para a Sharkpay: https://www.sharkpay.com.br')
-                    ->schema([
-                        TextInput::make('shark_public_key')
-                            ->label('Public Key')
-                            ->placeholder('Digite o Client ID')
-                            ->maxLength(191)
-                            ->columnSpanFull(),
-                        TextInput::make('shark_private_key')
-                            ->label('Private Key')
-                            ->placeholder('Digite a Private Key')
-                            ->maxLength(191)
-                            ->columnSpanFull(),
-                    ]),
-                Section::make('DigitoPay')
-                    ->description('Ajustes de credenciais para a DigitoPay')
-                    ->schema([
-                        TextInput::make('digitopay_uri')
-                            ->label('Client URI')
-                            ->placeholder('Digite a url da api')
-                            ->maxLength(191)
-                            ->columnSpanFull(),
-                        TextInput::make('digitopay_cliente_id')
-                            ->label('Client ID')
-                            ->placeholder('Digite o client ID')
-                            ->maxLength(191)
-                            ->columnSpanFull(),
-                        TextInput::make('digitopay_cliente_secret')
-                            ->label('Client Secret')
-                            ->placeholder('Digite o client secret')
-                            ->maxLength(191)
-                            ->columnSpanFull(),
-                    ]),
                 Section::make('TriboPay')
                     ->description('Ajustes de credenciais para a TriboPay')
                     ->schema([
@@ -129,7 +77,21 @@ class GatewayPage extends Page
                              ->placeholder('Digite o seu API Token')
                              ->maxLength(191)
                              ->columnSpanFull(),
-                    ])
+                    ]),
+                Section::make('VeoPag')
+                    ->description('Ajustes de credenciais para a VeoPag (Gateway Padrão)')
+                    ->schema([
+                        TextInput::make('veopag_client_id')
+                            ->label('Client ID')
+                            ->placeholder('Digite o Client ID da VeoPag')
+                            ->maxLength(191)
+                            ->columnSpanFull(),
+                        TextInput::make('veopag_client_secret')
+                            ->label('Client Secret')
+                            ->placeholder('Digite o Client Secret da VeoPag')
+                            ->maxLength(191)
+                            ->columnSpanFull(),
+                    ]),
             ])
             ->statePath('data');
     }

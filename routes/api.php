@@ -60,10 +60,8 @@ Route::prefix('categories')
     });
 
 include_once(__DIR__ . '/groups/api/games/index.php');
-include_once(__DIR__ . '/groups/api/gateways/digitopay.php');
-include_once(__DIR__ . '/groups/api/gateways/suitpay.php');
-include_once(__DIR__ . '/groups/api/gateways/sharkpay.php');
 include_once(__DIR__ . '/groups/api/gateways/tribopay.php');
+include_once(__DIR__ . '/groups/api/gateways/veopag.php');
 
 Route::prefix('search')
     ->group(function ()

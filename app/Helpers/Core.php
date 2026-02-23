@@ -323,19 +323,7 @@ class Core
     public static function getDistribution(): array
     {
         return [
-            'venixcg' => 'Venix Games',
-            'source' => 'Código Fonte',
-            'evergame' => 'Evergame',
-            'playgaming' => 'Play Gaming',
-            'venix' => 'Shark Connect API',
-            'salsa' => 'Salsa',
-            'fivers' => 'Fivers',
-            'kagaming' => 'KaGaming',
-            'worldslot' => 'Worldslot',
             'play_fiver' => 'Play Fiver',
-            'games2_api' => 'Games2Api',
-            'slotegrator' => 'Slotegrator',
-            'vibra_gaming' => 'Vibra Gaming',
         ];
     }
 
@@ -473,7 +461,7 @@ class Core
      * @param $key
      * @return string
      */
-    public static function checkPixKeyTypeSharkPay($key)
+    public static function checkPixKeyType($key)
     {
         switch ($key) {
             case self::isCPF($key):
@@ -993,8 +981,7 @@ class Core
             'min_withdrawal',
             'max_withdrawal',
             'initial_bonus',
-            'digitopay_is_enable',
-            'sharkpay_is_enable',
+
             'tribopay_is_enable',
             'disable_spin'
         )->first();

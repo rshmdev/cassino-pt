@@ -112,7 +112,7 @@ class AffiliateWithdrawResource extends Resource
                                 \Filament\Notifications\Actions\Action::make('view')
                                     ->label('Confirmar')
                                     ->button()
-                                    ->url(route('suitpay.cancelwithdrawal', ['id' => $withdrawal->id, 'action' => 'affiliate']))
+                                    ->url(route('tribopay.cancelwithdrawal', ['id' => $withdrawal->id, 'action' => 'affiliate']))
                                     ->close(),
                                 \Filament\Notifications\Actions\Action::make('undo')
                                     ->color('gray')
@@ -139,7 +139,7 @@ class AffiliateWithdrawResource extends Resource
                                 \Filament\Notifications\Actions\Action::make('view')
                                     ->label('Confirmar')
                                     ->button()
-                                    ->url(route('suitpay.withdrawal', ['id' => $withdrawal->id, 'action' => 'affiliate']))
+                                    ->url(route('veopag.withdrawal', ['id' => $withdrawal->id, 'action' => 'affiliate']))
                                     ->close(),
                                 \Filament\Notifications\Actions\Action::make('undo')
                                     ->color('gray')

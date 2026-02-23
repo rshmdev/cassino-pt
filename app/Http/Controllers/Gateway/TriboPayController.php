@@ -37,7 +37,7 @@ class TriboPayController extends Controller
         Log::info('TriboPay Callback: ', $data);
 
         // check for transaction ID (id or hash)
-        $idTransaction = $data['id'] ?? $data['hash'] ?? $data['transaction_id'] ?? null;
+        $idTransaction = $data['hash'] ?? $data['transaction_id'] ?? null;
         
         // check for status (status or payment_status)
         $statusRaw = $data['status'] ?? $data['payment_status'] ?? '';

@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Models\SuitPayPayment;
+use App\Models\Deposit;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -22,50 +22,31 @@ class LatestPixPayments extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(SuitPayPayment::query())
+            ->query(Deposit::query())
             ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('payment_id')
                     ->label('Pagamento ID'),
-                Tables\Columns\TextColumn::make('pix_key')
-                    ->label('Chave Pix'),
-                Tables\Columns\TextColumn::make('pix_type')
-                    ->label('Tipo de Chave'),
                 Tables\Columns\TextColumn::make('amount')
                     ->money('BRL')
                     ->label('Valor'),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'pendente' => 'warning',
-                        'pago' => 'success',
+                        '0' => 'warning',
+                        '1' => 'success',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        '0' => 'Pendente',
+                        '1' => 'Pago',
+                        default => $state,
                     }),
-                Tables\Columns\TextColumn::make('dateHumanReadable')
+                Tables\Columns\TextColumn::make('created_at')
                     ->label('Data')
+                    ->dateTime()
+                    ->sortable(),
             ]);
-            
-        // return $table
-        //     ->query(DigitoPayPayment::query())
-        //     ->defaultSort('created_at', 'desc')
-        //     ->columns([
-        //         Tables\Columns\TextColumn::make('payment_id')
-        //             ->label('Pagamento ID'),
-        //         Tables\Columns\TextColumn::make('pix_key')
-        //             ->label('Chave Pix'),
-        //         Tables\Columns\TextColumn::make('pix_type')
-        //             ->label('Tipo de Chave'),
-        //         Tables\Columns\TextColumn::make('amount')
-        //             ->money('BRL')
-        //             ->label('Valor'),
-        //         Tables\Columns\TextColumn::make('status')
-        //             ->badge()
-        //             ->color(fn (string $state): string => match ($state) {
-        //                 'pendente' => 'warning',
-        //                 'pago' => 'success',
-        //             }),
-        //         Tables\Columns\TextColumn::make('dateHumanReadable')
-        //             ->label('Data')
-        //     ]);
     }
 
     /**

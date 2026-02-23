@@ -10,30 +10,12 @@ use App\Models\GamesKey;
 use App\Models\Gateway;
 use App\Models\Provider;
 use App\Models\Wallet;
-use App\Traits\Providers\EvergameTrait;
-use App\Traits\Providers\FiversTrait;
-use App\Traits\Providers\Games2ApiTrait;
-use App\Traits\Providers\PlayGamingTrait;
-use App\Traits\Providers\SalsaGamesTrait;
-use App\Traits\Providers\VenixCGTrait;
-use App\Traits\Providers\VeniXTrait;
-use App\Traits\Providers\VibraTrait;
-use App\Traits\Providers\WorldSlotTrait;
 use App\Traits\Providers\PlayFiverTrait;
 use Illuminate\Http\Request;
 
 class GameController extends Controller
 {
-    use FiversTrait,
-        VibraTrait,
-        SalsaGamesTrait,
-        WorldSlotTrait,
-        Games2ApiTrait,
-        VeniXTrait,
-        EvergameTrait,
-        PlayGamingTrait,
-        VenixCGTrait,
-        PlayFiverTrait;
+    use PlayFiverTrait;
 
     /**
      * @dev venixplataformas
@@ -62,44 +44,6 @@ class GameController extends Controller
                     ->get();
 
         return response()->json(['featured_games' => $featured_games]);
-    }
-
-    /**
-     * Source Provider
-     *
-     * @dev venixplataformas
-     * @param Request $request
-     * @param $token
-     * @param $action
-     * @return \Illuminate\Http\JsonResponse|void
-     */
-    public function sourceProvider(Request $request, $token, $action)
-    {
-        $tokenOpen = \Helper::DecToken($token);
-        $validEndpoints = ['session', 'icons', 'spin', 'freenum'];
-
-        if (in_array($action, $validEndpoints)) {
-            if(isset($tokenOpen['status']) && $tokenOpen['status'])
-            {
-                $game = Game::whereStatus(1)->where('game_code', $tokenOpen['game'])->first();
-                if(!empty($game)) {
-                    $controller = \Helper::createController($game->game_code);
-
-                    switch ($action) {
-                        case 'session':
-                            return $controller->session($token);
-                        case 'spin':
-                            return $controller->spin($request, $token);
-                        case 'freenum':
-                            return $controller->freenum($request, $token);
-                        case 'icons':
-                            return $controller->icons();
-                    }
-                }
-            }
-        } else {
-            return response()->json([], 500);
-        }
     }
 
     /**
@@ -171,95 +115,6 @@ class GameController extends Controller
                     ]);
 
                     switch ($game->distribution) {
-                        case 'source':
-                            return response()->json([
-                                'game' => $game,
-                                'gameUrl' => url('/originals/'.$game->game_code.'/index.html?token='.$token),
-                                'token' => $token
-                            ]);
-                        case 'venixcg':
-                            $gameLauncher = self::GameLaunchVenixCG($game);
-                            if($gameLauncher) {
-                                return response()->json([
-                                    'game' => $game,
-                                    'gameUrl' => $gameLauncher,
-                                    'token' => $token
-                                ]);
-                            }else{
-                                return response()->json();
-                            }
-                        case 'playgaming':
-                            $gameLauncher = self::LaunchGamePlayGaming($game->game_id);
-
-                            if($gameLauncher) {
-                                return response()->json([
-                                    'game' => $game,
-                                    'gameUrl' => $gameLauncher,
-                                    'token' => $token
-                                ]);
-                            }else{
-                                return response()->json();
-                            }
-                        case 'salsa':
-                            return response()->json([
-                                'game' => $game,
-                                'gameUrl' => self::playGameSalsa('CHARGED', 'BRL', 'pt', $game->game_id),
-                                'token' => $token
-                            ]);
-                        case 'evergame':
-                            $evergameLaunch = self::GameLaunchEvergame($game->provider->code, $game->game_id, 'pt', auth('api')->id());
-
-                            if(isset($evergameLaunch['launchUrl'])) {
-                                return response()->json([
-                                    'game' => $game,
-                                    'gameUrl' => $evergameLaunch['launchUrl'],
-                                ]);
-                            }else{
-                                return response()->json($evergameLaunch);
-                            }
-                        case 'vibra_gaming':
-                            return response()->json([
-                                'game' => $game,
-                                'gameUrl' => self::GenerateGameLaunch($game),
-                                'token' => $token
-                            ]);
-                        case 'fivers':
-                            $fiversLaunch = self::GameLaunchFivers($game->provider->code, $game->game_id, 'pt', auth('api')->id());
-
-                            if(isset($fiversLaunch['launch_url'])) {
-                                return response()->json([
-                                    'game' => $game,
-                                    'gameUrl' => $fiversLaunch['launch_url'],
-                                    'token' => $token
-                                ]);
-                            }
-
-                            return response()->json(['error' => $fiversLaunch, 'status' => false ], 400);
-                        case 'games2_api':
-                            $games2ApiLaunch = self::GameLaunchGames2($game->provider->code, $game->game_id, 'pt', auth('api')->id());
-
-                            if(isset($games2ApiLaunch['launch_url'])) {
-                                return response()->json([
-                                    'game' => $game,
-                                    'gameUrl' => $games2ApiLaunch['launch_url'],
-                                    'token' => $token
-                                ]);
-                            }
-
-                            return response()->json(['error' => $games2ApiLaunch, 'status' => false ], 400);
-                        case 'worldslot':
-                            $worldslotLaunch = self::GameLaunchWorldSlot($game->provider->code, $game->game_id, 'pt', auth('api')->id());
-
-                            if(isset($worldslotLaunch['launch_url'])) {
-                                return response()->json([
-                                    'game' => $game,
-                                    'gameUrl' => $worldslotLaunch['launch_url'],
-                                    'token' => $token
-                                ]);
-                            }
-
-                            return response()->json(['error' => $worldslotLaunch, 'status' => false ], 400);
-
                         case 'play_fiver':
                             $playfiver = self::playFiverLaunch($game->game_id, $game->only_demo);
 
@@ -272,6 +127,9 @@ class GameController extends Controller
                             }
                             
                             return response()->json(['error' => $playfiver['msg'] ?? 'Erro desconhecido', 'status' => false ], 400);
+
+                        default:
+                            return response()->json(['error' => 'Provedor não suportado', 'status' => false ], 400);
                     }
                 }
                 return response()->json(['error' => 'Você precisa ter saldo para jogar', 'status' => false, 'action' => 'deposit' ], 200);
@@ -314,101 +172,8 @@ class GameController extends Controller
         return response()->json(['games' => $games]);
     }
 
-    /**
-     * @dev venixplataformas
-     * Update the specified resource in storage.
-     */
-    public function webhookGoldApiMethod(Request $request)
-    {
-        return self::WebhooksFivers($request);
-    }
-
     public function webhookPlayFiver(Request $request)
     {
         return self::webhookPlayFiverAPI($request);
-    }
-
-    /**
-     * @dev venixplataformas
-     * Update the specified resource in storage.
-     */
-    public function webhookUserBalanceMethod(Request $request)
-    {
-        return self::GetUserBalanceWorldSlot($request);
-    }
-
-    /**
-     * @dev venixplataformas
-     * Update the specified resource in storage.
-     */
-    public function webhookGameCallbackMethod(Request $request)
-    {
-        return self::GameCallbackWorldSlot($request);
-    }
-
-    /**
-     * @dev venixplataformas
-     * Update the specified resource in storage.
-     */
-    public function webhookMoneyCallbackMethod(Request $request)
-    {
-        return self::MoneyCallbackWorldSlot($request);
-    }
-
-    /**
-     * Webhook Vibra Method
-     *
-     * @param Request $request
-     * @param $parameters
-     * @return array|\Illuminate\Http\JsonResponse|null
-     */
-    public function webhookVibraMethod(Request $request, $parameters)
-    {
-        return self::WebhookVibra($request, $parameters);
-    }
-
-    /**
-     * @param Request $request
-     * @return null
-     */
-    public function webhookKaGamingMethod(Request $request)
-    {
-        return self::WebhookKaGaming($request);
-    }
-
-    /**
-     * @param Request $request
-     * @return null
-     */
-    public function webhookSalsaMethod(Request $request)
-    {
-        return self::webhookSalsa($request);
-    }
-
-    /**
-     * @param Request $request
-     * @return mixed
-     */
-    public function webhookVeniXMethod(Request $request)
-    {
-        return self::WebhookVenixCG($request);
-    }
-
-    /**
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse|null
-     */
-    public function webhookEvergameMethod(Request $request)
-    {
-        return self::WebhooksEvergame($request);
-    }
-
-    /**
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse|null
-     */
-    public function webhookPlayGamingMethod(Request $request)
-    {
-        return self::WebhooksPlayGaming($request);
     }
 }

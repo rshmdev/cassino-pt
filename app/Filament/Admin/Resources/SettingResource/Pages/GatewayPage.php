@@ -104,10 +104,8 @@ class GatewayPage extends Page implements HasForms
                 Section::make('Gateways')
                     ->description('Ativa ou desative seus gateway de Pagamento')
                     ->schema([
-                        Toggle::make('digitopay_is_enable')
-                            ->label('DigitoPay Ativo'),
-                        Toggle::make('sharkpay_is_enable')
-                            ->label('Sharkpay Ativo')
+                        Toggle::make('tribopay_is_enable')
+                            ->label('TriboPay Ativo'),
                     ])->columns(2)
             ])
             ->statePath('data') ;

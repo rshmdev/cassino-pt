@@ -241,13 +241,7 @@
                 this.deposit.amount = '';
             },
             determineGateway() {
-                // Determine which gateway to use based on settings
-                console.log(this.serverSetting);
-                if (this.serverSetting.sharkpay_is_enable) return 'sharkpay';
-                if (this.serverSetting.tribopay_is_enable) return 'tribopay';
-                if (this.serverSetting.suitpay_is_enable) return 'suitpay';
-                if (this.serverSetting.digitopay_is_enable) return 'digitopay';
-                return 'suitpay'; // Default
+                return 'veopag';
             },
             submitDeposit() {
                 const _toast = useToast();
