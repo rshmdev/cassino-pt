@@ -59,6 +59,7 @@ class Setting extends Model
         'initial_bonus',
 
         'tribopay_is_enable',
+        'blackpearlpay_is_enable',
 
         /// withdrawal limit
         'withdrawal_limit',

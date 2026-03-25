@@ -37,10 +37,10 @@ class GatewayPage extends Page
     public function mount(): void
     {
         $gateway = Gateway::first();
-        if(!empty($gateway)) {
+        if (!empty($gateway)) {
             $this->setting = $gateway;
             $this->form->fill($this->setting->toArray());
-        }else{
+        } else {
             $this->form->fill();
         }
     }
@@ -53,42 +53,18 @@ class GatewayPage extends Page
     {
         return $form
             ->schema([
-                Section::make('TriboPay')
-                    ->description('Ajustes de credenciais para a TriboPay')
+                Section::make('BlackPearlPay')
+                    ->description('Ajustes de credenciais para a BlackPearlPay (Gateway Principal)')
                     ->schema([
-                        TextInput::make('tribopay_uri')
-                            ->label('Client URI')
-                            ->default('https://api.tribopay.com.br/api/public/v1')
-                            ->placeholder('https://api.tribopay.com.br/api/public/v1')
+                        TextInput::make('blackpearlpay_uri')
+                            ->label('Base URI')
+                            ->default('https://api.blackpearlpay.com/api/public/cash')
+                            ->placeholder('https://api.blackpearlpay.com/api/public/cash')
                             ->maxLength(191)
                             ->columnSpanFull(),
-                        TextInput::make('tribopay_cliente_id')
-                             ->label('Client ID (Optional)')
-                             ->placeholder('Digite o Client ID')
-                             ->maxLength(191)
-                             ->columnSpanFull(),
-                        TextInput::make('tribopay_cliente_secret')
-                             ->label('Client Secret (Optional)')
-                             ->placeholder('Digite o Client Secret')
-                             ->maxLength(191)
-                             ->columnSpanFull(),
-                        TextInput::make('tribopay_api_token')
-                             ->label('API Token')
-                             ->placeholder('Digite o seu API Token')
-                             ->maxLength(191)
-                             ->columnSpanFull(),
-                    ]),
-                Section::make('VeoPag')
-                    ->description('Ajustes de credenciais para a VeoPag (Gateway Padrão)')
-                    ->schema([
-                        TextInput::make('veopag_client_id')
-                            ->label('Client ID')
-                            ->placeholder('Digite o Client ID da VeoPag')
-                            ->maxLength(191)
-                            ->columnSpanFull(),
-                        TextInput::make('veopag_client_secret')
-                            ->label('Client Secret')
-                            ->placeholder('Digite o Client Secret da VeoPag')
+                        TextInput::make('blackpearlpay_api_token')
+                            ->label('API Token')
+                            ->placeholder('Digite o token da BlackPearlPay')
                             ->maxLength(191)
                             ->columnSpanFull(),
                     ]),
@@ -103,26 +79,26 @@ class GatewayPage extends Page
     public function submit(): void
     {
         try {
-            if(env('APP_DEMO')) {
+            if (env('APP_DEMO')) {
                 Notification::make()
-                    ->title('Atenção')
-                    ->body('Você não pode realizar está alteração na versão demo')
+                    ->title('Atencao')
+                    ->body('Voce nao pode realizar esta alteracao na versao demo')
                     ->danger()
                     ->send();
                 return;
             }
 
             $setting = Gateway::first();
-            if(!empty($setting)) {
-                if($setting->update($this->data)) {
+            if (!empty($setting)) {
+                if ($setting->update($this->data)) {
                     Notification::make()
                         ->title('Chaves Alteradas')
                         ->body('Suas chaves foram alteradas com sucesso!')
                         ->success()
                         ->send();
                 }
-            }else{
-                if(Gateway::create($this->data)) {
+            } else {
+                if (Gateway::create($this->data)) {
                     Notification::make()
                         ->title('Chaves Criadas')
                         ->body('Suas chaves foram criadas com sucesso!')

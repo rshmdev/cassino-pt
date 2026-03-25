@@ -150,8 +150,8 @@ class PaymentSetting extends Page implements HasForms
                                 ->numeric()
                                 ->maxLength(191),
                         ])->columnSpanFull()->columns(3),
-                        Toggle::make('veopag_is_enable')
-                            ->label('VeoPag Ativo'),
+                        Toggle::make('blackpearlpay_is_enable')
+                            ->label('BlackPearlPay Ativo'),
                         Toggle::make('disable_spin')
                             ->label('Disable Spin')
                     ])->columns(2)

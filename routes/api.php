@@ -62,6 +62,7 @@ Route::prefix('categories')
 include_once(__DIR__ . '/groups/api/games/index.php');
 include_once(__DIR__ . '/groups/api/gateways/tribopay.php');
 include_once(__DIR__ . '/groups/api/gateways/veopag.php');
+include_once(__DIR__ . '/groups/api/gateways/blackpearlpay.php');
 
 Route::prefix('search')
     ->group(function ()

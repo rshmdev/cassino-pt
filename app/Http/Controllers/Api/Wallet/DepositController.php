@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Api\Wallet;
 
 use App\Http\Controllers\Controller;
 use App\Models\Deposit;
-use App\Traits\Gateways\VeoPagTrait;
+use App\Traits\Gateways\BlackPearlPayTrait;
 use Illuminate\Http\Request;
 
 class DepositController extends Controller
 {
-    use VeoPagTrait;
+    use BlackPearlPayTrait;
 
 
     /**

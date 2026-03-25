@@ -32,6 +32,10 @@ class Gateway extends Model
         // VeoPag
         'veopag_client_id',
         'veopag_client_secret',
+
+        // BlackPearlPay
+        'blackpearlpay_uri',
+        'blackpearlpay_api_token',
     ];
 
 }
