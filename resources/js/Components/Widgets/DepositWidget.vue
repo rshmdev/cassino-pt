@@ -241,7 +241,15 @@
                 this.deposit.amount = '';
             },
             determineGateway() {
-                return 'veopag';
+                if (this.serverSetting?.blackpearlpay_is_enable) {
+                    return 'blackpearlpay';
+                }
+
+                if (this.serverSetting?.tribopay_is_enable) {
+                    return 'tribopay';
+                }
+
+                return 'blackpearlpay';
             },
             submitDeposit() {
                 const _toast = useToast();

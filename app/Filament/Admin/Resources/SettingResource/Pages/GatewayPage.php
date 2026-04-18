@@ -106,6 +106,8 @@ class GatewayPage extends Page implements HasForms
                     ->schema([
                         Toggle::make('tribopay_is_enable')
                             ->label('TriboPay Ativo'),
+                        Toggle::make('blackpearlpay_is_enable')
+                            ->label('BlackPearlPay Ativo'),
                     ])->columns(2)
             ])
             ->statePath('data') ;

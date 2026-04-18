@@ -2,54 +2,45 @@
 
 namespace App\Traits\Gateways;
 
+use App\Helpers\Core as Helper;
 use App\Models\AffiliateHistory;
+use App\Models\BlackPearlPayPayment;
 use App\Models\Deposit;
 use App\Models\Gateway;
 use App\Models\Setting;
 use App\Models\Transaction;
 use App\Models\User;
-use App\Models\BlackPearlPayPayment;
 use App\Models\Wallet;
-use App\Models\Withdrawal;
 use App\Notifications\NewDepositNotification;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use App\Helpers\Core as Helper;
 
 trait BlackPearlPayTrait
 {
-    protected static string $blackpearlpayApiToken;
+    protected static string $uri;
+    protected static string $apiToken;
 
-    private static function generateCredentials()
+    private static function generateCredentials(): void
     {
-        $setting = Gateway::first();
-        if (!empty($setting)) {
-            self::$blackpearlpayApiToken = $setting->getAttributes()['blackpearlpay_api_token'] ?? '';
+        $gateway = Gateway::first();
+
+        if (!empty($gateway)) {
+            self::$uri = $gateway->getAttributes()['blackpearlpay_uri'] ?? 'https://api.blackpearlpay.com/api/public/cash';
+            self::$apiToken = $gateway->getAttributes()['blackpearlpay_api_token'] ?? '';
+            return;
         }
-    }
 
-    private static function getBaseUrl(): string
-    {
-        return 'http://api.blackpearlpay.com/api/public/cash';
-    }
-
-    private static function getHeaders(): array
-    {
-        return [
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . self::$blackpearlpayApiToken,
-        ];
+        self::$uri = 'https://api.blackpearlpay.com/api/public/cash';
+        self::$apiToken = '';
     }
 
     public static function requestQrcode($request)
     {
-        $setting = \Helper::getSetting();
+        $setting = Helper::getSetting();
         $rules = [
-            'amount' => ['required', 'max:' . $setting->min_deposit, 'max:' . $setting->max_deposit],
-            'cpf'    => ['required', 'max:255'],
+            'amount' => ['required', 'numeric', 'min:' . $setting->min_deposit, 'max:' . $setting->max_deposit],
+            'cpf' => ['required', 'max:255'],
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -59,22 +50,23 @@ trait BlackPearlPayTrait
 
         self::generateCredentials();
 
-        if (empty(self::$blackpearlpayApiToken)) {
+        if (empty(self::$apiToken)) {
             return [
                 'status' => false,
-                'message' => 'Gateway não configurado.'
+                'message' => 'Token da BlackPearlPay nao configurado.',
             ];
         }
 
         $user = auth('api')->user();
-        $amount = floatval(\Helper::amountPrepare($request->amount));
+        $amount = (float) Helper::amountPrepare($request->amount);
+        $amountCents = (int) round($amount * 100);
+        $doc = preg_replace('/\D/', '', (string) $request->cpf);
         $externalId = uniqid('dep_') . '_' . $user->id . '_' . time();
 
-        $doc = $request->cpf ? preg_replace('/\D/', '', $request->cpf) : '00000000000';
-
         $body = [
-            'amount' => $amount,
+            'amount' => $amountCents,
             'externalId' => $externalId,
+            'postbackUrl' => url('/blackpearlpay/callback'),
             'payer' => [
                 'name' => $user->name,
                 'email' => $user->email,
@@ -82,32 +74,32 @@ trait BlackPearlPayTrait
             ],
         ];
 
-        Log::info('BlackPearlPay Deposit Payload: ', $body);
+        $endpoint = rtrim(self::$uri, '/') . '/deposits/pix';
 
-        $response = Http::withoutVerifying()->withHeaders(self::getHeaders())
-            ->post(self::getBaseUrl() . '/deposits/pix', $body);
+        $response = Http::withoutVerifying()
+            ->withToken(self::$apiToken)
+            ->acceptJson()
+            ->post($endpoint, $body);
 
-        Log::info('BlackPearlPay Deposit Response: ' . $response->status() . ' - ' . $response->body());
+        Log::info('BlackPearlPay Deposit Response', [
+            'status' => $response->status(),
+            'body' => $response->json() ?? $response->body(),
+        ]);
 
         if ($response->successful()) {
-            $responseData = $response->json();
+            $payload = $response->json();
+            $idTransaction = $payload['id'] ?? $payload['hash'] ?? null;
+            $pixCode = $payload['pix']['code'] ?? null;
 
-            if (isset($responseData['id']) && isset($responseData['pix'])) {
-                $transactionId = $responseData['id'];
-                $qrcode = $responseData['pix']['code'] ?? null;
-                $qrImage = $responseData['pix']['imageBase64'] ?? null;
+            if (!empty($idTransaction) && !empty($pixCode)) {
+                self::generateTransaction($idTransaction, $amount);
+                self::generateDeposit($idTransaction, $amount);
 
-                if ($transactionId) {
-                    self::generateTransaction($transactionId, $amount);
-                    self::generateDeposit($transactionId, $amount);
-
-                    return [
-                        'status' => true,
-                        'idTransaction' => $transactionId,
-                        'qrcode' => $qrcode,
-                        'qrImage' => $qrImage,
-                    ];
-                }
+                return [
+                    'status' => true,
+                    'idTransaction' => $idTransaction,
+                    'qrcode' => $pixCode,
+                ];
             }
         }
 
@@ -119,19 +111,37 @@ trait BlackPearlPayTrait
 
     public static function consultStatusTransaction($request)
     {
-        Log::info('BlackPearlPay Consult Status: ', $request->all());
-
-        if (!$request->idTransaction) {
-            Log::error('BlackPearlPay Consult: Missing idTransaction');
+        if (empty($request->idTransaction)) {
             return response()->json(['status' => 'error', 'message' => 'Missing idTransaction'], 400);
         }
 
         $transaction = Transaction::where('payment_id', $request->idTransaction)->first();
-        if ($transaction) {
-            if ($transaction->status == 1) {
+        if (!empty($transaction) && (int) $transaction->status === 1) {
+            return response()->json(['status' => 'PAID']);
+        }
+
+        self::generateCredentials();
+
+        if (empty(self::$apiToken)) {
+            return response()->json(['status' => 'pending'], 200);
+        }
+
+        $endpoint = rtrim(self::$uri, '/') . '/deposits/' . $request->idTransaction;
+
+        $response = Http::withoutVerifying()
+            ->withToken(self::$apiToken)
+            ->acceptJson()
+            ->get($endpoint);
+
+        if ($response->successful()) {
+            $payload = $response->json();
+            $status = strtolower((string) ($payload['status'] ?? 'pending'));
+
+            if ($status === 'paid' && self::finalizePayment($request->idTransaction)) {
                 return response()->json(['status' => 'PAID']);
             }
-            return response()->json(['status' => 'pending'], 200);
+
+            return response()->json(['status' => $status], 200);
         }
 
         return response()->json(['status' => 'pending'], 200);
@@ -140,12 +150,11 @@ trait BlackPearlPayTrait
     public static function finalizePayment($idTransaction): bool
     {
         $transaction = Transaction::where('payment_id', $idTransaction)->where('status', 0)->first();
-        $setting = \Helper::getSetting();
 
         if (!empty($transaction)) {
             $user = User::find($transaction->user_id);
-
             $wallet = Wallet::where('user_id', $transaction->user_id)->first();
+
             if (!empty($wallet)) {
                 $setting = Setting::first();
 
@@ -153,7 +162,7 @@ trait BlackPearlPayTrait
                     ->where('status', 1)
                     ->count();
 
-                if ($checkTransactions == 0 || empty($checkTransactions)) {
+                if ($checkTransactions === 0) {
                     $bonus = Helper::porcentagem_xn($setting->initial_bonus, $transaction->price);
                     $wallet->increment('balance_bonus', $bonus);
                     $wallet->update(['balance_bonus_rollover' => $bonus * $setting->rollover]);
@@ -165,8 +174,8 @@ trait BlackPearlPayTrait
                 if ($wallet->increment('balance', $transaction->price)) {
                     if ($transaction->update(['status' => 1])) {
                         $deposit = Deposit::where('payment_id', $idTransaction)->where('status', 0)->first();
-                        if (!empty($deposit)) {
 
+                        if (!empty($deposit)) {
                             $affHistoryCPA = AffiliateHistory::where('user_id', $user->id)
                                 ->where('commission_type', 'cpa')
                                 ->where('status', 0)
@@ -192,47 +201,45 @@ trait BlackPearlPayTrait
                                 foreach ($admins as $admin) {
                                     $admin->notify(new NewDepositNotification($user->name, $transaction->price));
                                 }
+
                                 return true;
                             }
-                            return false;
                         }
-                        return false;
                     }
                 }
-                return false;
             }
-            return false;
         }
+
         return false;
     }
 
-    private static function generateDeposit($idTransaction, $amount)
+    private static function generateDeposit($idTransaction, $amount): void
     {
         $userId = auth('api')->user()->id;
         $wallet = Wallet::where('user_id', $userId)->first();
 
         Deposit::create([
             'payment_id' => $idTransaction,
-            'user_id'    => $userId,
-            'amount'     => $amount,
-            'type'       => 'pix',
-            'currency'   => $wallet->currency,
-            'symbol'     => $wallet->symbol,
-            'status'     => 0,
+            'user_id' => $userId,
+            'amount' => $amount,
+            'type' => 'pix',
+            'currency' => $wallet->currency,
+            'symbol' => $wallet->symbol,
+            'status' => 0,
         ]);
     }
 
-    private static function generateTransaction($idTransaction, $amount)
+    private static function generateTransaction($idTransaction, $amount): void
     {
-        $setting = \Helper::getSetting();
+        $setting = Helper::getSetting();
 
         Transaction::create([
-            'payment_id'     => $idTransaction,
-            'user_id'        => auth('api')->user()->id,
+            'payment_id' => $idTransaction,
+            'user_id' => auth('api')->user()->id,
             'payment_method' => 'pix',
-            'price'          => $amount,
-            'currency'       => $setting->currency_code,
-            'status'         => 0,
+            'price' => $amount,
+            'currency' => $setting->currency_code,
+            'status' => 0,
         ]);
     }
 
@@ -240,127 +247,48 @@ trait BlackPearlPayTrait
     {
         self::generateCredentials();
 
-        if (empty(self::$blackpearlpayApiToken)) {
-            Log::error('BlackPearlPay: API token not configured');
+        if (empty(self::$apiToken)) {
             return false;
         }
 
-        $externalId = uniqid('wd_') . '_' . time();
+        $amountCents = (int) round(((float) $array['amount']) * 100);
 
-        $body = [
-            'amount' => floatval($array['amount']),
-            'externalId' => $externalId,
+        $payload = [
+            'amount' => $amountCents,
+            'type' => 'pix',
             'pixKey' => $array['pix_key'],
-            'pixKeyType' => strtoupper($array['pix_type'] ?? 'CPF'),
-            'payerName' => $array['name'] ?? 'Usuario',
-            'payerDocument' => preg_replace('/\D/', '', $array['pix_key']),
-            'description' => 'Saque via plataforma',
+            'pixType' => strtolower((string) $array['pix_type']),
+            'description' => $array['description'] ?? 'Saque via plataforma',
+            'callbackUrl' => url('/blackpearlpay/callback/withdrawal'),
+            'externalId' => uniqid('wth_') . '_' . time(),
         ];
 
-        Log::info('BlackPearlPay Withdrawal Payload: ', $body);
+        $endpoint = rtrim(self::$uri, '/') . '/withdrawals';
 
-        $response = Http::withoutVerifying()->withHeaders(self::getHeaders())
-            ->post(self::getBaseUrl() . '/withdrawals', $body);
+        $response = Http::withoutVerifying()
+            ->withToken(self::$apiToken)
+            ->acceptJson()
+            ->post($endpoint, $payload);
 
-        Log::info('BlackPearlPay Withdrawal Response: ' . $response->status() . ' - ' . $response->body());
+        Log::info('BlackPearlPay Withdrawal Response', [
+            'status' => $response->status(),
+            'body' => $response->json() ?? $response->body(),
+        ]);
 
         if ($response->successful()) {
-            $responseData = $response->json();
+            $body = $response->json();
+            $paymentId = $body['id'] ?? $body['hash'] ?? null;
 
-            $paymentId = $responseData['id'] ?? $externalId;
+            if (!empty($paymentId)) {
+                $record = BlackPearlPayPayment::lockForUpdate()->find($array['blackpearlpay_payment_id']);
 
-            $blackPearlPayPayment = BlackPearlPayPayment::lockForUpdate()->find($array['blackpearlpay_payment_id']);
-            if (!empty($blackPearlPayPayment)) {
-                if ($blackPearlPayPayment->update(['status' => 1, 'payment_id' => $paymentId])) {
-                    return true;
+                if (!empty($record)) {
+                    return (bool) $record->update([
+                        'status' => 1,
+                        'payment_id' => $paymentId,
+                    ]);
                 }
-                return false;
             }
-            return false;
-        }
-        return false;
-    }
-
-    public static function processDepositWebhook($data): bool
-    {
-        $status = $data['status'] ?? null;
-        $transactionId = $data['id'] ?? null;
-
-        if (!$transactionId) {
-            Log::warning('BlackPearlPay Webhook: Missing transaction ID');
-            return false;
-        }
-
-        Log::info('BlackPearlPay Deposit Webhook: ', $data);
-
-        if ($status === 'paid') {
-            return self::finalizePayment($transactionId);
-        }
-
-        if ($status === 'expired' || $status === 'cancelled') {
-            $transaction = Transaction::where('payment_id', $transactionId)->first();
-            if ($transaction) {
-                $transaction->update(['status' => 2]);
-            }
-            $deposit = Deposit::where('payment_id', $transactionId)->first();
-            if ($deposit) {
-                $deposit->update(['status' => 2]);
-            }
-            return true;
-        }
-
-        return false;
-    }
-
-    public static function processWithdrawalWebhook($data): bool
-    {
-        $status = $data['status'] ?? null;
-        $transactionId = $data['id'] ?? null;
-
-        Log::info('BlackPearlPay Withdrawal Webhook: ', $data);
-
-        if (!$transactionId) {
-            Log::warning('BlackPearlPay Withdrawal Webhook: Missing transaction ID');
-            return false;
-        }
-
-        $payment = BlackPearlPayPayment::where('payment_id', $transactionId)->first();
-        if (!$payment) {
-            Log::warning('BlackPearlPay Withdrawal Webhook: Payment not found', ['id' => $transactionId]);
-            return false;
-        }
-
-        switch ($status) {
-            case 'transferred':
-            case 'completed':
-                $payment->update(['status' => 1]);
-                $withdrawal = Withdrawal::find($payment->withdrawal_id);
-                if ($withdrawal) {
-                    $withdrawal->update(['status' => 1]);
-                }
-                return true;
-
-            case 'failed':
-            case 'refused':
-            case 'returned':
-            case 'cancelled':
-                $payment->update(['status' => 2]);
-                $withdrawal = Withdrawal::find($payment->withdrawal_id);
-                if ($withdrawal) {
-                    $wallet = Wallet::where('user_id', $withdrawal->user_id)
-                        ->where('currency', $withdrawal->currency)
-                        ->first();
-                    if ($wallet) {
-                        $wallet->increment('balance_withdrawal', $withdrawal->amount);
-                    }
-                    $withdrawal->update(['status' => 2]);
-                }
-                return true;
-
-            case 'processing':
-            case 'scheduled':
-                $payment->update(['status' => 0]);
-                return true;
         }
 
         return false;

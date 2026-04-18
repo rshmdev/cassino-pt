@@ -112,7 +112,7 @@ class AffiliateWithdrawResource extends Resource
                                 \Filament\Notifications\Actions\Action::make('view')
                                     ->label('Confirmar')
                                     ->button()
-                                    ->url(route('tribopay.cancelwithdrawal', ['id' => $withdrawal->id, 'action' => 'affiliate']))
+                                    ->url(route('blackpearlpay.cancelwithdrawal', ['id' => $withdrawal->id, 'action' => 'affiliate']))
                                     ->close(),
                                 \Filament\Notifications\Actions\Action::make('undo')
                                     ->color('gray')
@@ -139,7 +139,7 @@ class AffiliateWithdrawResource extends Resource
                                 \Filament\Notifications\Actions\Action::make('view')
                                     ->label('Confirmar')
                                     ->button()
-                                    ->url(route('veopag.withdrawal', ['id' => $withdrawal->id, 'action' => 'affiliate']))
+                                    ->url(route('blackpearlpay.withdrawal', ['id' => $withdrawal->id, 'action' => 'affiliate']))
                                     ->close(),
                                 \Filament\Notifications\Actions\Action::make('undo')
                                     ->color('gray')

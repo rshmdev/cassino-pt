@@ -18,10 +18,15 @@ class BlackPearlPayController extends Controller
     public function callbackMethod(Request $request)
     {
         $data = $request->all();
-        Log::info('BlackPearlPay Deposit Callback: ', $data);
+        Log::info('BlackPearlPay Deposit Callback', $data);
 
-        if (self::processDepositWebhook($data)) {
-            return response()->json(['status' => 'success'], 200);
+        $status = strtolower((string) ($data['status'] ?? ''));
+        $idTransaction = $data['id'] ?? $data['hash'] ?? null;
+
+        if (!empty($idTransaction) && $status === 'paid') {
+            if (self::finalizePayment($idTransaction)) {
+                return response()->json(['status' => 'success'], 200);
+            }
         }
 
         return response()->json(['status' => 'received'], 200);
@@ -30,11 +35,7 @@ class BlackPearlPayController extends Controller
     public function callbackWithdrawal(Request $request)
     {
         $data = $request->all();
-        Log::info('BlackPearlPay Withdrawal Callback: ', $data);
-
-        if (self::processWithdrawalWebhook($data)) {
-            return response()->json(['status' => 'success'], 200);
-        }
+        Log::info('BlackPearlPay Withdrawal Callback', $data);
 
         return response()->json(['status' => 'received'], 200);
     }
@@ -52,31 +53,28 @@ class BlackPearlPayController extends Controller
     public function withdrawalFromModal($id)
     {
         $withdrawal = Withdrawal::find($id);
-        if (!empty($withdrawal)) {
-            $user = $withdrawal->user;
 
-            $blackPearlPayPayment = BlackPearlPayPayment::create([
+        if (!empty($withdrawal)) {
+            $blackPearlPayment = BlackPearlPayPayment::create([
                 'withdrawal_id' => $withdrawal->id,
-                'user_id'       => $withdrawal->user_id,
-                'pix_key'       => $withdrawal->pix_key,
-                'pix_type'      => $withdrawal->pix_type,
-                'amount'        => $withdrawal->amount,
-                'observation'   => 'Saque direto',
+                'user_id' => $withdrawal->user_id,
+                'pix_key' => $withdrawal->pix_key,
+                'pix_type' => $withdrawal->pix_type,
+                'amount' => $withdrawal->amount,
+                'observation' => 'Saque direto',
             ]);
 
-            if ($blackPearlPayPayment) {
-                $parm = [
-                    'pix_key'          => $withdrawal->pix_key,
-                    'pix_type'         => $withdrawal->pix_type,
-                    'amount'           => $withdrawal->amount,
-                    'name'             => $user->name ?? 'Usuario',
-                    'blackpearlpay_payment_id' => $blackPearlPayPayment->id,
-                ];
-
-                $resp = self::pixCashOut($parm);
+            if (!empty($blackPearlPayment)) {
+                $resp = self::pixCashOut([
+                    'pix_key' => $withdrawal->pix_key,
+                    'pix_type' => $withdrawal->pix_type,
+                    'amount' => $withdrawal->amount,
+                    'blackpearlpay_payment_id' => $blackPearlPayment->id,
+                ]);
 
                 if ($resp) {
                     $withdrawal->update(['status' => 1]);
+
                     Notification::make()
                         ->title('Saque solicitado')
                         ->body('Saque solicitado com sucesso')
@@ -84,22 +82,25 @@ class BlackPearlPayController extends Controller
                         ->send();
 
                     return back();
-                } else {
-                    Notification::make()
-                        ->title('Erro no saque')
-                        ->body('Erro ao solicitar o saque')
-                        ->danger()
-                        ->send();
-
-                    return back();
                 }
+
+                Notification::make()
+                    ->title('Erro no saque')
+                    ->body('Erro ao solicitar o saque')
+                    ->danger()
+                    ->send();
+
+                return back();
             }
         }
+
+        return back();
     }
 
     public function cancelWithdrawalFromModal($id)
     {
         $withdrawal = Withdrawal::find($id);
+
         if (!empty($withdrawal)) {
             $wallet = Wallet::where('user_id', $withdrawal->user_id)
                 ->where('currency', $withdrawal->currency)
@@ -117,8 +118,8 @@ class BlackPearlPayController extends Controller
 
                 return back();
             }
-            return back();
         }
+
         return back();
     }
 }

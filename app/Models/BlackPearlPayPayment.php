@@ -12,7 +12,7 @@ class BlackPearlPayPayment extends Model
 {
     use HasFactory;
 
-    protected $table = 'blackpearlpay_payments';
+    protected $table = 'black_pearl_pay_payments';
     protected $appends = ['dateHumanReadable', 'createdAt'];
 
     protected $fillable = [
@@ -23,7 +23,7 @@ class BlackPearlPayPayment extends Model
         'pix_type',
         'amount',
         'observation',
-        'status'
+        'status',
     ];
 
     protected function status(): Attribute
@@ -38,10 +38,7 @@ class BlackPearlPayPayment extends Model
         switch ($status) {
             case '1':
                 return 'pago';
-            case '2':
-                return 'cancelado';
             case '0':
-            default:
                 return 'pendente';
         }
     }
