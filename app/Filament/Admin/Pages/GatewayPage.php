@@ -92,6 +92,15 @@ class GatewayPage extends Page
                             ->maxLength(191)
                             ->columnSpanFull(),
                     ]),
+                Section::make('BlackPearlPay')
+                    ->description('Ajustes de credenciais para a BlackPearlPay')
+                    ->schema([
+                        TextInput::make('blackpearlpay_api_token')
+                            ->label('API Token')
+                            ->placeholder('Digite o API Token da BlackPearlPay')
+                            ->maxLength(191)
+                            ->columnSpanFull(),
+                    ]),
             ])
             ->statePath('data');
     }

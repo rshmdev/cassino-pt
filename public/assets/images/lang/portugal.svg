@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="600" height="400" viewBox="0 0 600 400">
+  <rect width="240" height="400" fill="#060"/>
+  <rect x="240" width="360" height="400" fill="#f00"/>
+  <g transform="translate(240,200)">
+    <circle r="80" fill="#ff0"/>
+    <!-- Shield -->
+    <path d="M-55.5-68.5v119c0 30.6 24.8 55.4 55.5 55.4s55.5-24.8 55.5-55.4v-119h-111z" fill="#f00" stroke="#000" stroke-width="2"/>
+    <path d="M-40.5-53.5v104c0 22.4 18.1 40.5 40.5 40.5s40.5-18.1 40.5-40.5v-104h-81z" fill="#fff"/>
+    <!-- 7 Castles -->
+    <g id="castle" transform="translate(0,-61)">
+      <path d="M-7,0v7h14v-7h-3v-3h-2v3h-4v-3h-2v3z" fill="#ff0" stroke="#000" stroke-width="1"/>
+    </g>
+    <use xlink:href="#castle" transform="rotate(45) translate(0,-61) rotate(-45)"/>
+    <use xlink:href="#castle" transform="rotate(-45) translate(0,-61) rotate(45)"/>
+    <use xlink:href="#castle" transform="rotate(90) translate(0,-61) rotate(-90)"/>
+    <use xlink:href="#castle" transform="rotate(-90) translate(0,-61) rotate(90)"/>
+    <use xlink:href="#castle" transform="rotate(135) translate(0,-61) rotate(-135)"/>
+    <use xlink:href="#castle" transform="rotate(-135) translate(0,-61) rotate(135)"/>
+    <!-- 5 Quinas -->
+    <g id="quina" transform="translate(0,-24)">
+      <path d="M-9.5-12v21.5c0 5.2 4.3 9.5 9.5 9.5s9.5-4.3 9.5-9.5v-21.5h-19z" fill="#00c"/>
+      <g fill="#fff">
+        <circle cy="-6.5" r="2"/><circle cx="-5" cy="1.5" r="2"/><circle cx="5" cy="1.5" r="2"/><circle cx="-5" cy="9.5" r="2"/><circle cx="5" cy="9.5" r="2"/>
+      </g>
+    </g>
+    <use xlink:href="#quina" x="-22" y="24"/>
+    <use xlink:href="#quina" x="22" y="24"/>
+    <use xlink:href="#quina" y="48"/>
+  </g>
+</svg>
