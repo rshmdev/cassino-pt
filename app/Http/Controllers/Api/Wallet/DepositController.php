@@ -11,7 +11,18 @@ use Illuminate\Http\Request;
 
 class DepositController extends Controller
 {
-    use BlackPearlPayTrait, StripeTrait;
+    use BlackPearlPayTrait, StripeTrait {
+        BlackPearlPayTrait::generateCredentials insteadof StripeTrait;
+        BlackPearlPayTrait::consultStatusTransaction insteadof StripeTrait;
+        BlackPearlPayTrait::finalizePayment insteadof StripeTrait;
+        BlackPearlPayTrait::generateTransaction insteadof StripeTrait;
+        BlackPearlPayTrait::generateDeposit insteadof StripeTrait;
+        StripeTrait::generateCredentials as generateStripeCredentials;
+        StripeTrait::consultStatusTransaction as consultStripeStatusTransaction;
+        StripeTrait::finalizePayment as finalizeStripePayment;
+        StripeTrait::generateTransaction as generateStripeTransaction;
+        StripeTrait::generateDeposit as generateStripeDeposit;
+    }
 
     public function submitPayment(Request $request)
     {
@@ -30,7 +41,7 @@ class DepositController extends Controller
         $gateway = $request->get('gateway', 'blackpearlpay');
 
         if ($gateway === 'stripe') {
-            return self::consultStatusTransaction($request);
+            return self::consultStripeStatusTransaction($request);
         }
 
         return self::consultStatusTransaction($request);
