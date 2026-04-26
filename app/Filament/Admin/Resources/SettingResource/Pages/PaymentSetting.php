@@ -152,6 +152,8 @@ class PaymentSetting extends Page implements HasForms
                         ])->columnSpanFull()->columns(3),
                         Toggle::make('blackpearlpay_is_enable')
                             ->label('BlackPearlPay Ativo'),
+                        Toggle::make('stripe_is_enable')
+                            ->label('Stripe Ativo'),
                         Toggle::make('disable_spin')
                             ->label('Disable Spin')
                     ])->columns(2)

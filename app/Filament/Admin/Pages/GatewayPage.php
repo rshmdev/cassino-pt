@@ -68,6 +68,32 @@ class GatewayPage extends Page
                             ->maxLength(191)
                             ->columnSpanFull(),
                     ]),
+                Section::make('Stripe')
+                    ->description('Ajustes de credenciais para Stripe (Checkout Session)')
+                    ->schema([
+                        TextInput::make('stripe_public_key')
+                            ->label('Public Key (pk_...)')
+                            ->placeholder('pk_live_...')
+                            ->maxLength(191)
+                            ->columnSpanFull(),
+                        TextInput::make('stripe_secret_key')
+                            ->label('Secret Key (sk_...)')
+                            ->placeholder('sk_live_...')
+                            ->maxLength(191)
+                            ->password()
+                            ->revealable()
+                            ->columnSpanFull(),
+                        TextInput::make('stripe_webhook_secret')
+                            ->label('Webhook Signing Secret (whsec_...)')
+                            ->placeholder('whsec_...')
+                            ->maxLength(191)
+                            ->columnSpanFull(),
+                        TextInput::make('stripe_connected_account_id')
+                            ->label('Connected Account ID (acct_...)')
+                            ->placeholder('acct_...')
+                            ->maxLength(191)
+                            ->columnSpanFull(),
+                    ]),
             ])
             ->statePath('data');
     }

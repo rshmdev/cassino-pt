@@ -60,6 +60,7 @@ class Setting extends Model
 
         'tribopay_is_enable',
         'blackpearlpay_is_enable',
+        'stripe_is_enable',
 
         /// withdrawal limit
         'withdrawal_limit',

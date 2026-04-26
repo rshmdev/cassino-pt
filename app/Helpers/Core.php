@@ -983,6 +983,8 @@ class Core
             'initial_bonus',
 
             'tribopay_is_enable',
+            'blackpearlpay_is_enable',
+            'stripe_is_enable',
             'disable_spin'
         )->first();
     }

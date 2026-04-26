@@ -36,6 +36,12 @@ class Gateway extends Model
         // BlackPearlPay
         'blackpearlpay_uri',
         'blackpearlpay_api_token',
+
+        // Stripe
+        'stripe_public_key',
+        'stripe_secret_key',
+        'stripe_webhook_secret',
+        'stripe_connected_account_id',
     ];
 
 }

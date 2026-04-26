@@ -4,38 +4,41 @@ namespace App\Http\Controllers\Api\Wallet;
 
 use App\Http\Controllers\Controller;
 use App\Models\Deposit;
+use App\Models\Setting;
 use App\Traits\Gateways\BlackPearlPayTrait;
+use App\Traits\Gateways\StripeTrait;
 use Illuminate\Http\Request;
 
 class DepositController extends Controller
 {
-    use BlackPearlPayTrait;
+    use BlackPearlPayTrait, StripeTrait;
 
-
-    /**
-     * @param Request $request
-     * @return array|false[]
-     */
     public function submitPayment(Request $request)
     {
+        $setting = Setting::first();
+        $gateway = $request->get('gateway', 'blackpearlpay');
+
+        if ($gateway === 'stripe' && $setting->stripe_is_enable) {
+            return self::requestCheckoutSession($request);
+        }
+
         return self::requestQrcode($request);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function consultStatusTransactionPix(Request $request)
     {
+        $gateway = $request->get('gateway', 'blackpearlpay');
+
+        if ($gateway === 'stripe') {
+            return self::consultStatusTransaction($request);
+        }
+
         return self::consultStatusTransaction($request);
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $deposits = Deposit::whereUserId(auth('api')->id())->paginate();
         return response()->json(['deposits' => $deposits], 200);
     }
-
 }

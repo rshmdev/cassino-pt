@@ -10,7 +10,7 @@
 
         <!-- Main Content -->
         <div v-else class="space-y-4">
-            <!-- Payment Success / QR Code View -->
+            <!-- Payment Success / QR Code View (PIX) -->
             <div v-if="showPixQRCode" class="flex flex-col items-center animate-fade-in space-y-4">
                 <div class="text-center space-y-2">
                     <div class="mx-auto w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-4">
@@ -70,7 +70,21 @@
                 </div>
 
                 <!-- Payment Method -->
-                <div class="space-y-1">
+                <div v-if="isStripeGateway" class="space-y-1">
+                    <label class="text-[10px] font-bold uppercase tracking-widest text-gray-500">{{ $t('Payment methods') }}</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <i class="fa-brands fa-cc-stripe text-xl text-indigo-400"></i>
+                        </div>
+                        <select v-model="paymentType" class="block w-full pl-10 pr-4 py-3 bg-[#0c0d10] border border-white/10 rounded-lg text-white appearance-none focus:outline-none focus:border-primary/50 text-sm font-medium">
+                            <option value="card">Stripe (Card)</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-xs text-gray-500"></i>
+                        </div>
+                    </div>
+                </div>
+                <div v-else class="space-y-1">
                     <label class="text-[10px] font-bold uppercase tracking-widest text-gray-500">{{ $t('Payment methods') }}</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -106,7 +120,7 @@
                     </div>
                 </div>
 
-                <!-- Bonus Toggle -->
+                <!-- Bonus Toggle (hidden for Stripe if needed, or shown for both) -->
                 <div class="p-3 bg-gradient-to-r from-[#0c0d10] to-[#131418] border border-white/10 rounded-lg flex items-center justify-between">
                     <div>
                         <p class="text-sm font-bold text-white mb-0.5">
@@ -139,8 +153,8 @@
                     </button>
                 </div>
 
-                <!-- CPF Input -->
-                 <div class="space-y-1">
+                <!-- CPF Input (only for PIX) -->
+                <div v-if="!isStripeGateway" class="space-y-1">
                     <label class="text-[10px] font-bold uppercase tracking-widest text-gray-500">{{ $t('CPF') }}</label>
                     <div class="relative">
                          <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
@@ -164,7 +178,7 @@
                     :disabled="isLoading || !serverSetting"
                     class="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white font-black uppercase text-sm tracking-wider py-4 rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-2"
                 >
-                    <span v-if="!isLoading">{{ $t('Deposit') }}</span>
+                    <span v-if="!isLoading">{{ isStripeGateway ? $t('Pay with Stripe') : $t('Deposit') }}</span>
                     <div v-else class="flex items-center justify-center">
                          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -221,12 +235,14 @@
                 const authStore = useAuthStore();
                 return authStore.isAuth;
             },
+            isStripeGateway() {
+                return this.determineGateway() === 'stripe';
+            },
         },
         methods: {
              stateCurrencyFormat(value) {
                 if(value === undefined || value === null) return '0,00';
-                 // Fallback if wallet/currency not loaded yet
-                const currency = this.wallet?.currency || 'BRL';
+                 const currency = this.wallet?.currency || 'USD';
                 const locale = currency === 'BRL' ? 'pt-BR' : 'en-US';
                 return new Intl.NumberFormat(locale, { style: 'currency', currency: currency }).format(value);
             },
@@ -241,6 +257,10 @@
                 this.deposit.amount = '';
             },
             determineGateway() {
+                if (this.serverSetting?.stripe_is_enable) {
+                    return 'stripe';
+                }
+
                 if (this.serverSetting?.blackpearlpay_is_enable) {
                     return 'blackpearlpay';
                 }
@@ -273,18 +293,26 @@
                     return;
                 }
 
-                if (!this.deposit.cpf) {
+                const gateway = this.determineGateway();
+
+                if (gateway !== 'stripe' && !this.deposit.cpf) {
                     _toast.error(this.$t('Enter your CPF'));
                     return;
                 }
 
                 this.isLoading = true;
-                this.deposit.gateway = this.determineGateway();
-                this.deposit.paymentType = this.paymentType; // Always pix for now
+                this.deposit.gateway = gateway;
+                this.deposit.paymentType = gateway === 'stripe' ? 'card' : 'pix';
 
                 HttpApi.post('wallet/deposit/payment', this.deposit).then(response => {
-                    this.showPixQRCode = true;
                     this.isLoading = false;
+
+                    if (gateway === 'stripe' && response.data.type === 'stripe_checkout' && response.data.url) {
+                        window.location.href = response.data.url;
+                        return;
+                    }
+
+                    this.showPixQRCode = true;
                     this.idTransaction = response.data.idTransaction;
                     this.qrcodecopypast = response.data.qrcode;
 
@@ -294,9 +322,12 @@
 
                 }).catch(error => {
                     this.isLoading = false;
-                    if (error.request && error.request.responseText) {
-                        const err = JSON.parse(error.request.responseText);
-                        Object.values(err).forEach(msg => _toast.error(msg));
+                    if (error.response && error.response.data) {
+                        if (typeof error.response.data === 'object') {
+                            Object.values(error.response.data).forEach(msg => _toast.error(msg));
+                        } else {
+                            _toast.error(this.$t('Error processing deposit'));
+                        }
                     } else {
                         _toast.error(this.$t('Error processing deposit'));
                     }
@@ -312,8 +343,7 @@
                         _toast.success(this.$t('Deposit confirmed successfully!'));
                         clearInterval(this.intervalId);
                         this.resetForm();
-                        this.getWallet(); // Refresh wallet
-                        // Close modal logic if needed
+                        this.getWallet();
                         this.$emit('close-modal');
                     }
                 }).catch(error => {
@@ -335,9 +365,8 @@
                     
                     this.wallet = walletRes.data.wallet;
                     
-                    // Fallback to store if direct call fails or logic dictates
                     const settingStore = useSettingStore();
-                    this.serverSetting = settingStore.setting; // Use store setting for now as logic was mixed
+                    this.serverSetting = settingStore.setting;
                     
                     this.isLoadingWallet = false;
                 } catch (e) {
@@ -345,7 +374,7 @@
                     this.isLoadingWallet = false;
                 }
             },
-               getWallet: function() { // Added back as it was called in multiple places
+               getWallet: function() {
                 const _this = this;
                 _this.isLoadingWallet = true;
 
@@ -358,14 +387,42 @@
                          _this.isLoadingWallet = false;
                     });
             },
+            handleUrlStatus() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const status = urlParams.get('status');
+
+                if (status === 'paid') {
+                    const _toast = useToast();
+                    _toast.success(this.$t('Deposit confirmed successfully!'));
+                    this.getWallet();
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } else if (status === 'cancelled') {
+                    const _toast = useToast();
+                    _toast.error(this.$t('Payment was cancelled.'));
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } else if (status === 'pending') {
+                    const _toast = useToast();
+                    _toast.info(this.$t('Payment is being processed...'));
+
+                    const sessionId = urlParams.get('session_id') || urlParams.get('idTransaction');
+                    if (sessionId) {
+                        this.idTransaction = sessionId;
+                        this.intervalId = setInterval(() => {
+                            this.checkTransactions(sessionId);
+                        }, 5000);
+                    }
+
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            },
         },
         created() {
-            // Initial data fetch
             if(this.isAuthenticated) {
                 const settingStore = useSettingStore();
                 this.serverSetting = settingStore.setting;
                 
                 this.getWallet();
+                this.handleUrlStatus();
             }
         },
         beforeUnmount() {

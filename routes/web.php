@@ -37,6 +37,7 @@ include_once(__DIR__ . '/groups/provider/playFiver.php');
 include_once(__DIR__ . '/groups/gateways/tribopay.php');
 include_once(__DIR__ . '/groups/gateways/veopag.php');
 include_once(__DIR__ . '/groups/gateways/blackpearlpay.php');
+include_once(__DIR__ . '/groups/gateways/stripe.php');
 
 /// SOCIAL
 include_once(__DIR__ . '/groups/auth/social.php');
