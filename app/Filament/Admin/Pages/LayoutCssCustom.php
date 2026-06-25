@@ -5,7 +5,7 @@ namespace App\Filament\Admin\Pages;
 use App\Models\CustomLayout;
 use Creagia\FilamentCodeField\CodeField;
 use Filament\Forms\Components\ColorPicker;
-use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -70,149 +70,178 @@ class LayoutCssCustom extends Page implements HasForms
     {
         return $form
             ->schema([
-                Section::make()
-                    ->label('Background')
-                    ->schema([
-                        ColorPicker::make('background_base')
-                            ->label('Background Principal')
-                            ->required(),
-                        ColorPicker::make('background_base_dark')
-                            ->label('Background Principal (Dark)')
-                            ->required(),
-                        ColorPicker::make('carousel_banners')
-                            ->label('Carousel Banners')
-                            ->required(),
-                        ColorPicker::make('carousel_banners_dark')
-                            ->label('Carousel Banners (Dark)')
-                            ->required(),
-                    ])->columns(4)
-                ,
-                Section::make('Sidebar & Navbar & Footer')
-                    ->description('Personalize a aparência do seu site, conferindo-lhe uma identidade única.')
-                    ->collapsible()
-                    ->collapsed(true)
-                    ->schema([
-                        ColorPicker::make('sidebar_color')
-                            ->label('Sidebar')
-                            ->required(),
+                Tabs::make('Tema')
+                    ->columnSpanFull()
+                    ->persistTabInQueryString()
+                    ->tabs([
 
-                        ColorPicker::make('sidebar_color_dark')
-                            ->label('Sidebar (Dark)')
-                            ->required(),
+                        // ----------------------------------------------------------------
+                        Tabs\Tab::make('Marca & Texto')
+                            ->icon('heroicon-o-swatch')
+                            ->columns(2)
+                            ->schema([
+                                ColorPicker::make('primary_color')
+                                    ->label('Cor Principal')
+                                    ->helperText('Cor da marca: botões, links, ícones ativos e destaques em todo o site.')
+                                    ->required(),
+                                ColorPicker::make('primary_opacity_color')
+                                    ->label('Cor Principal (translúcida)')
+                                    ->helperText('Versão suave/transparente da cor principal (fundos de destaque, brilhos).')
+                                    ->required(),
+                                ColorPicker::make('secundary_color')
+                                    ->label('Cor Secundária')
+                                    ->helperText('Cor de apoio usada em alguns destaques secundários.')
+                                    ->required(),
+                                ColorPicker::make('title_color')
+                                    ->label('Cor dos Títulos')
+                                    ->helperText('Cor dos títulos e cabeçalhos das seções.')
+                                    ->required(),
+                                ColorPicker::make('text_color')
+                                    ->label('Cor do Texto')
+                                    ->helperText('Cor do texto comum (parágrafos, descrições, labels).')
+                                    ->required(),
+                                ColorPicker::make('placeholder_color')
+                                    ->label('Cor do Placeholder')
+                                    ->helperText('Cor do texto de exemplo dentro dos campos (ex.: "Procurar...").')
+                                    ->required(),
+                                TextInput::make('border_radius')
+                                    ->label('Arredondamento das bordas')
+                                    ->helperText('Raio das bordas dos elementos. Ex.: .25rem (suave), .5rem, 9999px (redondo).')
+                                    ->required(),
+                            ]),
 
-                        ColorPicker::make('navtop_color')
-                            ->label('Navtop')
-                            ->required(),
+                        // ----------------------------------------------------------------
+                        Tabs\Tab::make('Cinzas & Base')
+                            ->icon('heroicon-o-squares-2x2')
+                            ->columns(2)
+                            ->schema([
+                                ColorPicker::make('gray_dark_color')
+                                    ->label('Cinza Escuro')
+                                    ->helperText('Tom de cinza escuro para detalhes e elementos auxiliares.')
+                                    ->required(),
+                                ColorPicker::make('gray_medium_color')
+                                    ->label('Cinza Médio')
+                                    ->helperText('Cinza médio para ícones e textos auxiliares.')
+                                    ->required(),
+                                ColorPicker::make('gray_light_color')
+                                    ->label('Cinza Claro')
+                                    ->helperText('Cinza claro para bordas e detalhes sutis.')
+                                    ->required(),
+                                ColorPicker::make('gray_over_color')
+                                    ->label('Cinza de Realce (hover)')
+                                    ->helperText('Cinza usado em realces e ao passar o mouse (hover).')
+                                    ->required(),
+                                ColorPicker::make('background_color')
+                                    ->label('Cor de Fundo (base)')
+                                    ->helperText('Cor de fundo base usada por vários componentes.')
+                                    ->required(),
+                            ]),
 
-                        ColorPicker::make('navtop_color_dark')
-                            ->label('Navtop (Dark)')
-                            ->required(),
+                        // ----------------------------------------------------------------
+                        Tabs\Tab::make('Modo Claro')
+                            ->icon('heroicon-o-sun')
+                            ->columns(2)
+                            ->schema([
+                                ColorPicker::make('background_base')
+                                    ->label('Fundo Principal')
+                                    ->helperText('Fundo geral das páginas no modo claro.')
+                                    ->required(),
+                                ColorPicker::make('carousel_banners')
+                                    ->label('Fundo do Carrossel / Banners')
+                                    ->helperText('Fundo da área de banners no topo da home.')
+                                    ->required(),
+                                ColorPicker::make('sidebar_color')
+                                    ->label('Menu Lateral (sidebar)')
+                                    ->helperText('Fundo do menu lateral esquerdo.')
+                                    ->required(),
+                                ColorPicker::make('navtop_color')
+                                    ->label('Barra Superior (navbar)')
+                                    ->helperText('Fundo da barra do topo do site.')
+                                    ->required(),
+                                ColorPicker::make('side_menu')
+                                    ->label('Itens do Menu Lateral')
+                                    ->helperText('Fundo das caixinhas/itens dentro do menu lateral.')
+                                    ->required(),
+                                ColorPicker::make('footer_color')
+                                    ->label('Rodapé')
+                                    ->helperText('Fundo do rodapé.')
+                                    ->required(),
+                                ColorPicker::make('input_primary')
+                                    ->label('Campos / Inputs')
+                                    ->helperText('Fundo dos campos de formulário (inputs).')
+                                    ->required(),
+                                ColorPicker::make('card_color')
+                                    ->label('Cards de Jogos')
+                                    ->helperText('Fundo dos cards/quadros de jogos.')
+                                    ->required(),
+                            ]),
 
-                        ColorPicker::make('side_menu')
-                            ->label('Side Menu Box')
-                            ->required(),
+                        // ----------------------------------------------------------------
+                        Tabs\Tab::make('Modo Escuro')
+                            ->icon('heroicon-o-moon')
+                            ->columns(2)
+                            ->schema([
+                                ColorPicker::make('background_base_dark')
+                                    ->label('Fundo Principal')
+                                    ->helperText('Fundo geral das páginas no modo escuro (é o modo padrão do site).')
+                                    ->required(),
+                                ColorPicker::make('carousel_banners_dark')
+                                    ->label('Fundo do Carrossel / Banners')
+                                    ->helperText('Fundo da área de banners no topo da home (escuro).')
+                                    ->required(),
+                                ColorPicker::make('sidebar_color_dark')
+                                    ->label('Menu Lateral (sidebar)')
+                                    ->helperText('Fundo do menu lateral esquerdo (escuro).')
+                                    ->required(),
+                                ColorPicker::make('navtop_color_dark')
+                                    ->label('Barra Superior (navbar)')
+                                    ->helperText('Fundo da barra do topo do site (escuro).')
+                                    ->required(),
+                                ColorPicker::make('side_menu_dark')
+                                    ->label('Itens do Menu Lateral')
+                                    ->helperText('Fundo das caixinhas/itens do menu lateral (escuro).')
+                                    ->required(),
+                                ColorPicker::make('footer_color_dark')
+                                    ->label('Rodapé')
+                                    ->helperText('Fundo do rodapé (escuro).')
+                                    ->required(),
+                                ColorPicker::make('input_primary_dark')
+                                    ->label('Campos / Inputs')
+                                    ->helperText('Fundo dos campos de formulário (escuro).')
+                                    ->required(),
+                                ColorPicker::make('card_color_dark')
+                                    ->label('Cards de Jogos')
+                                    ->helperText('Fundo dos cards/quadros de jogos (escuro).')
+                                    ->required(),
+                            ]),
 
-                        ColorPicker::make('side_menu_dark')
-                            ->label('Side Menu Box (Dark)')
-                            ->required(),
+                        // ----------------------------------------------------------------
+                        Tabs\Tab::make('Código (Avançado)')
+                            ->icon('heroicon-o-code-bracket')
+                            ->schema([
+                                CodeField::make('custom_css')
+                                    ->label('CSS personalizado')
+                                    ->setLanguage(CodeField::CSS)
+                                    ->withLineNumbers()
+                                    ->minHeight(300),
+                                CodeField::make('custom_js')
+                                    ->label('JS personalizado')
+                                    ->setLanguage(CodeField::JS)
+                                    ->withLineNumbers()
+                                    ->minHeight(300),
+                                CodeField::make('custom_header')
+                                    ->label('HTML no <head>')
+                                    ->setLanguage(CodeField::HTML)
+                                    ->withLineNumbers()
+                                    ->minHeight(300),
+                                CodeField::make('custom_body')
+                                    ->label('HTML no <body>')
+                                    ->setLanguage(CodeField::HTML)
+                                    ->withLineNumbers()
+                                    ->minHeight(300),
+                            ]),
 
-                        ColorPicker::make('footer_color')
-                            ->label('Footer Color')
-                            ->required(),
-
-                        ColorPicker::make('footer_color_dark')
-                            ->label('Footer Color (Dark)')
-                            ->required(),
-                    ])->columns(4)
-                ,
-
-                Section::make('Customização')
-                    ->description('Personalize a aparência do seu site, conferindo-lhe uma identidade única.')
-                    ->collapsible()
-                    ->collapsed(true)
-                    ->schema([
-                        ColorPicker::make('primary_color')
-                            ->label('Primary Color')
-                            ->required(),
-                        ColorPicker::make('primary_opacity_color')
-                            ->label('Primary Opacity Color')
-                            ->required(),
-
-                        ColorPicker::make('input_primary')
-                            ->label('Input Primary')
-                            ->required(),
-                        ColorPicker::make('input_primary_dark')
-                            ->label('Input Primary (Dark)')
-                            ->required(),
-
-                        ColorPicker::make('card_color')
-                            ->label('Card Primary')
-                            ->required(),
-                        ColorPicker::make('card_color_dark')
-                            ->label('Card Primary (Dark)')
-                            ->required(),
-
-                        ColorPicker::make('secundary_color')
-                            ->label('Secundary Color')
-                            ->required(),
-                        ColorPicker::make('gray_dark_color')
-                            ->label('Gray Dark Color')
-                            ->required(),
-                        ColorPicker::make('gray_light_color')
-                            ->label('Gray Light Color')
-                            ->required(),
-                        ColorPicker::make('gray_medium_color')
-                            ->label('Gray Medium Color')
-                            ->required(),
-                        ColorPicker::make('gray_over_color')
-                            ->label('Gray Over Color')
-                            ->required(),
-                        ColorPicker::make('title_color')
-                            ->label('Title Color')
-                            ->required(),
-                        ColorPicker::make('text_color')
-                            ->label('Text Color')
-                            ->required(),
-                        ColorPicker::make('sub_text_color')
-                            ->label('Sub Text Color')
-                            ->required(),
-                        ColorPicker::make('placeholder_color')
-                            ->label('Placeholder Color')
-                            ->required(),
-                        ColorPicker::make('background_color')
-                            ->label('Background Color')
-                            ->required(),
-                        TextInput::make('border_radius')
-                            ->label('Border Radius')
-                            ->required(),
-                    ])->columns(4),
-                Section::make('Customização no Código HTML BASE')
-                    ->description('Customize seu css, js, ou adicione conteúdo no corpo da sua página')
-                    ->collapsible()
-                    ->collapsed(true)
-                     ->schema([
-                         CodeField::make('custom_css')
-                             ->label('Customização do CSS')
-                             ->setLanguage(CodeField::CSS)
-                             ->withLineNumbers()
-                             ->minHeight(400),
-                         CodeField::make('custom_js')
-                             ->label('Customização do JS')
-                             ->setLanguage(CodeField::JS)
-                             ->withLineNumbers()
-                             ->minHeight(400),
-                         CodeField::make('custom_header')
-                             ->label('Customização do Header')
-                             ->setLanguage(CodeField::HTML)
-                             ->withLineNumbers()
-                             ->minHeight(400),
-                         CodeField::make('custom_body')
-                             ->label('Customização do Body')
-                             ->setLanguage(CodeField::HTML)
-                             ->withLineNumbers()
-                             ->minHeight(400),
-                     ])
-
+                    ]),
             ])
             ->statePath('data');
     }

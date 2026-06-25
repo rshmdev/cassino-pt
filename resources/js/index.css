@@ -27,7 +27,8 @@ html {
 @layer components {
     :root {
         --ci-primary-color: #D61F26;
-        --ci-primary-opacity: rgba(214, 31, 38, 0.1);
+        --ci-primary-rgb: 214 31 38; /* fallback; sobrescrito pelo painel admin em app.blade.php */
+        --ci-primary-opacity: rgb(var(--ci-primary-rgb) / 0.1);
         --glass-bg: rgba(255, 255, 255, 0.03);
         --glass-border: rgba(255, 255, 255, 0.08);
         --glass-blur: blur(12px);
@@ -60,7 +61,7 @@ html {
 
     .modern-sidebar-inner {
         scrollbar-width: thin;
-        scrollbar-color: rgba(214, 31, 38, 0.3) transparent;
+        scrollbar-color: rgb(var(--ci-primary-rgb) / 0.3) transparent;
     }
 
     .modern-sidebar-inner::-webkit-scrollbar {
@@ -72,12 +73,12 @@ html {
     }
 
     .modern-sidebar-inner::-webkit-scrollbar-thumb {
-        background: rgba(214, 31, 38, 0.3);
+        background: rgb(var(--ci-primary-rgb) / 0.3);
         border-radius: 4px;
     }
 
     .modern-sidebar-inner::-webkit-scrollbar-thumb:hover {
-        background: rgba(214, 31, 38, 0.5);
+        background: rgb(var(--ci-primary-rgb) / 0.5);
     }
 
     /* Navigation Links */
@@ -92,7 +93,7 @@ html {
 
     .nav-link-active {
         @apply bg-gradient-to-r from-primary/20 to-transparent text-white border-l-2 border-primary;
-        box-shadow: 0 0 20px rgba(214, 31, 38, 0.1);
+        box-shadow: 0 0 20px rgb(var(--ci-primary-rgb) / 0.1);
     }
 
     .nav-link i {
@@ -189,13 +190,14 @@ html {
     .btn-primary {
         @apply transition duration-300 ease-in-out text-white font-bold text-sm px-8 py-3 focus:outline-none rounded-lg;
         background-color: var(--ci-primary-color);
-        box-shadow: 0 4px 15px rgba(214, 31, 38, 0.3);
+        box-shadow: 0 4px 15px rgb(var(--ci-primary-rgb) / 0.3);
     }
 
     .btn-primary:hover {
-        background-color: #f0242b;
+        background-color: var(--ci-primary-color);
+        filter: brightness(1.12);
         transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(214, 31, 38, 0.4);
+        box-shadow: 0 6px 20px rgb(var(--ci-primary-rgb) / 0.4);
     }
 
     .input {
@@ -614,13 +616,14 @@ body {
     color: #fff;
     background-color: var(--ci-primary-color);
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(214, 31, 38, 0.2);
+    box-shadow: 0 4px 15px rgb(var(--ci-primary-rgb) / 0.2);
 }
 
 .ui-button-blue:hover {
-    background-color: #f0242b;
+    background-color: var(--ci-primary-color);
+    filter: brightness(1.12);
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(214, 31, 38, 0.3);
+    box-shadow: 0 6px 20px rgb(var(--ci-primary-rgb) / 0.3);
 }
 
 .ui-button-black {
@@ -1612,13 +1615,15 @@ select:focus {
 }
 
 .site-menu-item:hover {
-    background-color: var(--side-menu)24;
-    border-color: var(--ci-primary-color)24;
+    background-color: var(--side-menu);
+    border-color: var(--ci-primary-color);
+    filter: brightness(1.12);
 }
 
 :is(.dark .site-menu-item:hover) {
-    background-color: var(--side-menu-dark)24;
-    border-color: var(--ci-primary-color)24;
+    background-color: var(--side-menu-dark);
+    border-color: var(--ci-primary-color);
+    filter: brightness(1.12);
 }
 
 .item-game {

@@ -33,7 +33,6 @@ class CustomLayout extends Model
         'gray_over_color',
         'title_color',
         'text_color',
-        'sub_text_color',
         'placeholder_color',
         'background_color',
 

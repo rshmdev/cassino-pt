@@ -1,5 +1,5 @@
 <template>
-    <nav class="fixed top-0 z-50 w-full bg-[#0c0d10] border-b border-white/5 h-[60px]">
+    <nav class="fixed top-0 z-50 w-full bg-[var(--navtop-color)] dark:bg-[var(--navtop-color-dark)] border-b border-white/5 h-[60px]">
         <div class="px-3 lg:px-5 w-full h-full">
             <div class="flex items-center justify-between h-full">
                 

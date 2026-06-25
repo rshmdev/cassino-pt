@@ -13,18 +13,21 @@ module.exports = {
     theme: {
         extend: {
             colors: {
+                // Cor primária controlada pelo painel admin (Custom Layout).
+                // Lê os canais RGB injetados em :root via --ci-primary-rgb,
+                // permitindo modificadores de opacidade (primary/10, primary/50...).
                 primary: {
-                    DEFAULT: '#D61F26',
-                    50: '#FDECEC',
-                    100: '#FBD9D9',
-                    200: '#F7B4B4',
-                    300: '#F38E8E',
-                    400: '#EF6969',
-                    500: '#D61F26',
-                    600: '#B81A20',
-                    700: '#94151A',
-                    800: '#711013',
-                    900: '#4D0B0D',
+                    DEFAULT: 'rgb(var(--ci-primary-rgb) / <alpha-value>)',
+                    50: 'rgb(var(--ci-primary-rgb) / <alpha-value>)',
+                    100: 'rgb(var(--ci-primary-rgb) / <alpha-value>)',
+                    200: 'rgb(var(--ci-primary-rgb) / <alpha-value>)',
+                    300: 'rgb(var(--ci-primary-rgb) / <alpha-value>)',
+                    400: 'rgb(var(--ci-primary-rgb) / <alpha-value>)',
+                    500: 'rgb(var(--ci-primary-rgb) / <alpha-value>)',
+                    600: 'rgb(var(--ci-primary-rgb) / <alpha-value>)',
+                    700: 'rgb(var(--ci-primary-rgb) / <alpha-value>)',
+                    800: 'rgb(var(--ci-primary-rgb) / <alpha-value>)',
+                    900: 'rgb(var(--ci-primary-rgb) / <alpha-value>)',
                 },
                 secondary: {
                     100: '#FCE7E7',

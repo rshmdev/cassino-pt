@@ -62,7 +62,7 @@
                     <!-- Live Casino -->
                      <li>
                          <RouterLink :to="{ name: 'casinosAll', params: { provider: 'all', category: 'live-casino' }}" active-class="text-white bg-white/5" class="flex items-center p-3 text-gray-400 rounded-lg hover:text-white hover:bg-white/5 group transition-colors">
-                            <i class="fa-duotone fa-cards w-6 text-center text-lg group-hover:text-red-400 transition-colors"></i>
+                            <i class="fa-duotone fa-cards w-6 text-center text-lg group-hover:text-primary transition-colors"></i>
                             <span class="ml-3 text-xs font-bold uppercase tracking-wide">{{ $t('Live Casino') }}</span>
                          </RouterLink>
                     </li>
@@ -71,7 +71,7 @@
                     <li>
                          <RouterLink :to="{ name: 'casinosAll', params: { provider: 'all', category: 'crashChoice' }}" active-class="text-white bg-white/5" class="flex items-center justify-between p-3 text-gray-400 rounded-lg hover:text-white hover:bg-white/5 group transition-colors">
                             <div class="flex items-center">
-                                <i class="fa-duotone fa-plane-up w-6 text-center text-lg group-hover:text-red-500 transition-colors"></i>
+                                <i class="fa-duotone fa-plane-up w-6 text-center text-lg group-hover:text-primary transition-colors"></i>
                                 <span class="ml-3 text-xs font-bold uppercase tracking-wide">{{ $t('Aviator') }}</span>
                             </div>
                             <span class="bg-[#be123c] text-white text-[9px] font-black px-1.5 py-0.5 rounded ml-2 animate-pulse">HOT</span>

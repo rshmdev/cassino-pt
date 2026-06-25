@@ -17,12 +17,25 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         @php $custom = \Helper::getCustom() @endphp
+        @php
+            // Converte a cor primária (hex) do painel em canais RGB "r g b",
+            // usados pelo Tailwind (rgb(var(--ci-primary-rgb) / <alpha>)) para
+            // que bg-primary, text-primary e modificadores de opacidade sigam o tema.
+            $primaryHex = ltrim($custom['primary_color'] ?? '#D61F26', '#');
+            if (strlen($primaryHex) === 3) {
+                $primaryHex = $primaryHex[0].$primaryHex[0].$primaryHex[1].$primaryHex[1].$primaryHex[2].$primaryHex[2];
+            }
+            $primaryRgb = (strlen($primaryHex) === 6 && ctype_xdigit($primaryHex))
+                ? hexdec(substr($primaryHex, 0, 2)).' '.hexdec(substr($primaryHex, 2, 2)).' '.hexdec(substr($primaryHex, 4, 2))
+                : '214 31 38';
+        @endphp
         <style>
             body{
                 font-family: {{ $custom['font_family_default'] ?? "'Roboto Condensed', sans-serif" }};
             }
             :root {
                 --ci-primary-color: {{ $custom['primary_color'] }};
+                --ci-primary-rgb: {{ $primaryRgb }};
                 --ci-primary-opacity-color: {{ $custom['primary_opacity_color'] }};
                 --ci-secundary-color: {{ $custom['secundary_color'] }};
                 --ci-gray-dark: {{ $custom['gray_dark_color'] }};
@@ -31,7 +44,6 @@
                 --ci-gray-over: {{ $custom['gray_over_color'] }};
                 --title-color: {{ $custom['title_color'] }};
                 --text-color: {{ $custom['text_color'] }};
-                --sub-text-color: {{ $custom['sub_text_color'] }};
                 --placeholder-color: {{ $custom['placeholder_color'] }};
                 --background-color: {{ $custom['background_color'] }};
                 --standard-color: #1C1E22;
@@ -70,17 +82,17 @@
                 --sidebar-color-dark: {{ $custom['sidebar_color_dark'] }} !important;
 
 
-                --navtop-color {{ $custom['navtop_color'] }};
+                --navtop-color: {{ $custom['navtop_color'] }};
                 --navtop-color-dark: {{ $custom['navtop_color_dark'] }};
 
 
-                --side-menu {{ $custom['side_menu'] }};
+                --side-menu: {{ $custom['side_menu'] }};
                 --side-menu-dark: {{ $custom['side_menu_dark'] }};
 
-                --footer-color {{ $custom['footer_color'] }};
+                --footer-color: {{ $custom['footer_color'] }};
                 --footer-color-dark: {{ $custom['footer_color_dark'] }};
 
-                --card-color {{ $custom['card_color'] }};
+                --card-color: {{ $custom['card_color'] }};
                 --card-color-dark: {{ $custom['card_color_dark'] }};
             }
             .navtop-color{
